@@ -1,27 +1,27 @@
 {
-  "name": "pixi-webpack-ts",
-  "version": "6.0.4",
-  "license": "CC-BY-NC-4.0",
-  "author": "Loïc TRUCHOT <loic.truchot.pro@gmail.com>",
-  "description": "A pre installed environnement to work with pixi.js with webpack & typescript",
+  "name": "pixi-pipeline",
+  "version": "1.0.0",
+  "description": "Pipeline WinDLX with [pixi.js & webpack & typescript]",
+  "author": "nonodev96",
+  "license": "ISC",
+  "repository": "https://github.com/nonodev96/pixi-pipeline.git",
+  "homepage": "https://github.com/nonodev96/pixi-pipeline",
+  "bugs": "https://github.com/nonodev96/pixi-pipeline/issues",
   "engines": {
     "node": "^14.0.0",
     "npm": "^7.0.0"
   },
   "main": "./src/app.ts",
   "scripts": {
-    "npm-reset": "rm -rf node_modules && npm cache verify && npm i",
-    "git-reset": "git reset HEAD --hard && git clean -fd && git fetch --all --tags --prune && git pull",
-    "start": "webpack serve",
-    "build": "webpack"
+    "start": "webpack serve --open --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js"
   },
   "keywords": [
     "pixijs",
     "playground",
     "basic",
     "webpack",
-    "typescript",
-    "seed"
+    "typescript"
   ],
   "dependencies": {
     "pixi.js": "6.0.4"

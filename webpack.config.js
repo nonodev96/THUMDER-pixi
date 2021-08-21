@@ -10,8 +10,9 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
   mode: 'development',
   entry: './src/app.ts',
-  devtool: 'source-map',
+  //devtool: 'source-map',
   output: {
+    clean: true,
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
   },
@@ -83,6 +84,7 @@ module.exports = {
     extensions: ['.ts', '.js'],
   },
   devServer: {
+    //contentBase: './dist',
     open: true,
     disableHostCheck: true,
     headers: {
@@ -92,4 +94,9 @@ module.exports = {
         'X-Requested-With, content-type, Authorization',
     },
   },
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000
+  }
 };

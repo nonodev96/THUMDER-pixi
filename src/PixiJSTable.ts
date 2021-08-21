@@ -37,7 +37,7 @@ export class PixiJSTable extends PIXI.Container {
         columnSeparation: number = 10,
         rowStartPosition: { x: number, y: number } = { x: 5, y: 5 },
         cellStartPosition: { x: number, y: number } = { x: 5, y: 5 },
-        title: PIXI.Text = new PIXI.Text("Test")
+        title: PIXI.Text = new PIXI.Text("")
     ) {
 
 
@@ -64,10 +64,10 @@ export class PixiJSTable extends PIXI.Container {
      */
     drawTitle() {
         if (this.title == null) {
-            this.title = new PIXI.Text("NULL");
+            this.title = new PIXI.Text("");
             this.title.pivot.x = this.title.width / 2;
         } else {
-            this.title.position.x = this.title.width / 2;
+            this.title.pivot.x = this.width / 2;
             this.title.position.y = this.title.height / 2;
         }
         this.addChild(<any>this.title);
@@ -165,7 +165,7 @@ export class PixiJSTable extends PIXI.Container {
         this.updateRows();
     }
 
-    draw() {
+    draw(): PIXI.Container {
         return this
     }
 
@@ -280,7 +280,6 @@ export class PixiJSTable extends PIXI.Container {
 
         while (currentColumn < this.maxCols) {
             this.rows.forEach((row: any, index: number) => {
-                console.log(row);
                 if (_inst.getCell(index, currentColumn)) {
                     let cell = _inst.getCell(index, currentColumn);
                     //if you're here, check the width of the current cell
