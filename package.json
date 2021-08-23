@@ -24,7 +24,9 @@
     "typescript"
   ],
   "dependencies": {
-    "pixi.js": "6.0.4"
+    "pixi.js": "6.1.2",
+    "pixi.js-keyboard": "^1.1.6",
+    "pixi.js-mouse": "^1.1.6"
   },
   "devDependencies": {
     "@babel/core": "7.14.3",

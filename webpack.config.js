@@ -23,14 +23,12 @@ module.exports = {
       title: 'Pixi / Typescript Tests',
     }),
 
-    /*
     new CopyPlugin({
-       patterns: [{
-         from: './src/assets',
-         to: './assets',
-       }],
-     }),
-     */
+      patterns: [{
+        from: './src/assets',
+        to: './assets',
+      }],
+    }),
     new webpack.ProgressPlugin(),
   ],
 
