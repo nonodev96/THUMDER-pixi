@@ -1,13 +1,13 @@
 import * as PIXI from 'pixi.js';
-import { Graphics } from 'pixi.js';
+import { LinkedList, Queue } from 'datastructures-js';
 import { PixiJSTable } from './PixiJSTable';
-// import { Utils } from './Utils';
 
 const styleFontTextInstruction = new PIXI.TextStyle({
   fontFamily: 'Arial',
   fontSize: 15,
   fill: 'white',
   stroke: '#000000',
+  align: 'center',
   // strokeThickness: 0,
   // dropShadow: true,
   // dropShadowColor: "#000000",
@@ -29,6 +29,19 @@ const styleFontTextSteps = new PIXI.TextStyle({
   // dropShadowDistance: 6,
 });
 
+export const defaultPipe = {
+  IF: 1,
+  IF_stall: 0,
+  ID: 1,
+  ID_stall: 0,
+  intEX: 1,
+  intEX_stall: 0,
+  MEM: 1,
+  MEM_stall: 0,
+  WB: 1,
+  WB_stall: 0,
+};
+
 export type ArrowDirection = {
   start: {
     instruction: number,
@@ -38,6 +51,11 @@ export type ArrowDirection = {
     instruction: number,
     step: number
   }
+};
+
+export type CellPosition = {
+  instruction: number,
+  step: number
 }
 
 export type Pipe = {
@@ -51,56 +69,68 @@ export type Pipe = {
   MEM_stall?: number,
   WB?: number
   WB_stall?: number
-}
-
-export const defaultPipe = {
-  IF: 1,
-  IF_stall: 0,
-  ID: 1,
-  ID_stall: 0,
-  intEX: 1,
-  intEX_stall: 0,
-  MEM: 1,
-  MEM_stall: 0,
-  WB: 1,
-  WB_stall: 0
-}
+};
 
 export class PixiJSPipeline extends PIXI.Container {
-  table: PixiJSTable
-  tableSteps: PixiJSTable
-  tableInstructions: PixiJSTable
-  arrows: PIXI.Graphics[]
-  borderTitle: PIXI.Graphics
-  borderLeft: PIXI.Graphics
-  borderTop: PIXI.Graphics
-  step: number
+  table: PixiJSTable;
+
+  tableSteps: PixiJSTable;
+
+  tableInstructions: PixiJSTable;
+
+  arrows: PIXI.Graphics;
+
+  borderTitle: PIXI.Graphics;
+
+  borderLeft: PIXI.Graphics;
+
+  borderTop: PIXI.Graphics;
+
+  realStep: number;
+
+  step: number;
+
+  instruction: number;
+
+  // K => Row = instruction
+  timer: Map<number, Queue<PIXI.Graphics>>;
+
+  listArrows: LinkedList<ArrowDirection>;
 
   constructor() {
     super();
     this.table = new PixiJSTable();
     this.tableSteps = new PixiJSTable();
     this.tableInstructions = new PixiJSTable();
-    this.arrows = [];
+    this.arrows = new PIXI.Graphics();
+
+    this.instruction = 0;
+    this.realStep = 0;
     this.step = 0;
+
     this.borderTitle = new PIXI.Graphics();
     this.borderLeft = new PIXI.Graphics();
     this.borderTop = new PIXI.Graphics();
 
+    this.timer = new Map();
+    this.listArrows = new LinkedList();
+
     this.initTables();
-    this.drawBorders()
+    this.drawBorders();
   }
 
   private initTables() {
     this.table.position.x += 200;
     this.table.position.y += 50;
-    // this.table.zIndex = 10
+    this.table.zIndex = 1;
+
+    this.arrows.zIndex = 2;
 
     this.tableSteps.position.x += 200;
-    this.tableSteps.zIndex = 12
+    this.tableSteps.zIndex = 6;
 
     this.tableInstructions.position.y += 50;
-    this.tableInstructions.zIndex = 11
+    this.tableInstructions.zIndex = 7;
   }
 
   private drawBorders() {
@@ -109,35 +139,44 @@ export class PixiJSPipeline extends PIXI.Container {
     this.borderTitle.beginFill(0x333333);
     this.borderTitle.drawRect(0, 0, 200, 80);
     this.borderTitle.endFill();
-    this.borderTitle.zIndex = 13
-    
-    const text = new PIXI.Text(`Pipeline`, { fontFamily: 'Arial', fontSize: 30, fill: 'white', stroke: '#000000', });
+    this.borderTitle.zIndex = 10;
+
+    const text = new PIXI.Text('Pipeline', {
+      fontFamily: 'Arial',
+      fontSize: 30,
+      fill: 'white',
+      stroke: '#000000',
+    });
     text.position.x = (this.borderTitle.width / 2) - (text.width / 2);
     text.position.y = (this.borderTitle.height / 2) - (text.height / 2);
     this.borderTitle.addChild(text);
 
-    this.borderLeft = new Graphics();
+    this.borderLeft = new PIXI.Graphics();
     this.borderLeft.lineStyle(2.5, 0x222222, 1);
     this.borderLeft.beginFill(0x333333);
     this.borderLeft.drawRect(0, 0, 200, document.documentElement.clientWidth);
     this.borderLeft.endFill();
-    this.borderLeft.zIndex = 10
+    this.borderLeft.zIndex = 5;
 
     this.borderTop = new PIXI.Graphics();
     this.borderTop.lineStyle(2.5, 0x222222, 1);
     this.borderTop.beginFill(0x333333);
     this.borderTop.drawRect(0, 0, document.documentElement.clientWidth, 80);
     this.borderTop.endFill();
-    // this.borderTop.zIndex = 12
-
+    this.borderTop.zIndex = 4;
   }
 
-  public addInstruction(text: string, pipe: Pipe = defaultPipe, instructionsArrow: ArrowDirection[] = [], newStep: number = 1) {
+  public addInstruction(text: string, pipe: Pipe = defaultPipe, waitToStep = 0) {
     this.drawInstruction(text);
-    for (let i = 0; i < this.step; i++) {
-      this.drawPipe('', 0xCCCCCC, 0xBBBBBB, { instruction: this.step, step: i });
+
+    for (let i = 0; i < waitToStep; i++) {
+      this.drawPipe('', 0xCCCCCC, 0xBBBBBB, {
+        instruction: this.instruction,
+        step: i,
+      });
     }
 
+    const initStep = this.step;
     for (let i = 0; i < (pipe.IF_stall ?? defaultPipe.IF_stall); i++) this.drawPipe('💣', 0xFFFF00);
     for (let i = 0; i < (pipe.IF ?? defaultPipe.IF); i++) this.drawPipe('IF', 0xFFFF00);
 
@@ -152,30 +191,21 @@ export class PixiJSPipeline extends PIXI.Container {
 
     for (let i = 0; i < (pipe.WB_stall ?? defaultPipe.WB_stall); i++) this.drawPipe('💣', 0xFF00FF);
     for (let i = 0; i < (pipe.WB ?? defaultPipe.WB); i++) this.drawPipe('WB', 0xFF00FF);
-
-
-    for (const arrow of instructionsArrow) {
-      this.drawArrow(arrow);
-    }
-
-    this.drawSteps()
-    this.step += 1;
-
+    this.step = initStep;
 
     this.table.addRow();
+    this.instruction++;
+  }
 
-    // const r1 = Utils.getRandomInt(0, 10)
-    // const r2 = Utils.getRandomInt(0, 10)
-    // const r3 = Utils.getRandomInt(0, 10)
-    // const r4 = Utils.getRandomInt(0, 10)
-    // this.drawArrow({ start: { instruction: r1, step: r2 }, to: { instruction: r3, step: r4 } })
+  public addArrow(instructionArrow: ArrowDirection) {
+    this.listArrows.insertFirst(instructionArrow);
   }
 
   /**
    * https://didactalia.net/comunidad/materialeducativo/recurso/calculadoras-de-progresiones-aritmeticas/f0ee1413-0276-7915-8ec2-fe0b2b31f6fc
    * https://math.stackexchange.com/questions/1314006/drawing-an-arrow
    */
-  public drawArrow(arrowDirection: ArrowDirection, color = 0xFF0000) {
+  private drawArrow(arrowDirection: ArrowDirection, color = 0xFF0000) {
     const initDistance_x = 210 + 37.5;
     const initDistance_y = 90 + 12.5;
 
@@ -192,18 +222,15 @@ export class PixiJSPipeline extends PIXI.Container {
     const y4 = to_y + (15 / L1) * ((start_y - to_y) * Math.abs(Math.cos(angle)) + (start_x - to_x) * Math.abs(Math.sin(angle)));
 
     const bezierArrow = new PIXI.Graphics();
-    bezierArrow
-      .lineStyle(3, color)
+    bezierArrow.lineStyle(3, color);
+    bezierArrow.moveTo(start_x, start_y);
+    bezierArrow.lineTo(to_x, to_y);
+    bezierArrow.moveTo(x3, y3);
+    bezierArrow.lineTo(to_x, to_y);
+    bezierArrow.moveTo(x4, y4);
+    bezierArrow.lineTo(to_x, to_y);
 
-      .moveTo(start_x, start_y)
-      .lineTo(to_x, to_y)
-
-      .moveTo(x3, y3)
-      .lineTo(to_x, to_y)
-      .moveTo(x4, y4)
-      .lineTo(to_x, to_y);
-
-    this.arrows.push(bezierArrow);
+    this.arrows.addChild(bezierArrow);
   }
 
   private drawInstruction(text_value: string) {
@@ -212,10 +239,10 @@ export class PixiJSPipeline extends PIXI.Container {
     rectangle.beginFill(0x66CCFF);
     rectangle.drawRect(0, 0, 175, 25);
     rectangle.endFill();
-    // rectangle.zIndex = 11
+    rectangle.zIndex = 11;
 
     const text = new PIXI.Text(text_value, styleFontTextInstruction);
-    text.position.x += (rectangle.width - text.width) / 2;
+    text.position.x += (rectangle.width / 2) - (text.width / 2);
     text.position.y += ((rectangle.height - text.height) / 2) - 2.5;
     rectangle.addChild(text);
 
@@ -225,40 +252,65 @@ export class PixiJSPipeline extends PIXI.Container {
 
   private drawSteps() {
     const rectangle = new PIXI.Graphics();
-    rectangle.lineStyle(2.5, 0xAAAAAA, 1);
-    rectangle.beginFill(0xAAAAAA);
+    rectangle.lineStyle(2.5, 0x0033FF, 1);
+    rectangle.beginFill(0x66CCFF);
     rectangle.drawRect(0, 0, 75, 25);
     rectangle.endFill();
-    
-    const text = new PIXI.Text("" + this.step, styleFontTextInstruction);
+    const text = new PIXI.Text(`${this.realStep}`, styleFontTextInstruction);
     text.position.x += (rectangle.width - text.width) / 2;
     text.position.y += ((rectangle.height - text.height) / 2) - 2.5;
     rectangle.addChild(text);
-    
     this.tableSteps.addCell(rectangle);
   }
 
-  private drawPipe(code: '' | '💣' | 'ID' | 'IF' | 'intEX' | 'MEM' | 'WB' | 'TEST' | null = null, colorLineStyle = 0xCCCCCC, colorFill = 0xBBBBBB, cellAt: { instruction: number, step: number } | null = null) {
+  private drawPipe(code: '' | '💣' | 'ID' | 'IF' | 'intEX' | 'MEM' | 'WB' | 'TEST' | null = null, colorLineStyle = 0xCCCCCC, colorFill = 0xBBBBBB, cellAt: CellPosition | null = null) {
     const rectangle = new PIXI.Graphics();
     rectangle.lineStyle(2.5, colorLineStyle, 1);
     rectangle.beginFill(colorFill);
     rectangle.drawRect(0, 0, 75, 25);
     rectangle.endFill();
-    rectangle.zIndex = 11
+    rectangle.zIndex = 11;
     if (code != null) {
       const step = new PIXI.Text(code, styleFontTextSteps);
       step.position.x += (rectangle.width - step.width) / 2;
       step.position.y += 5;
       rectangle.addChild(step);
-    } else {
     }
 
-    if (cellAt != null) {
-      rectangle.position.y += 5;
-      this.table.addCellAt(rectangle, cellAt.instruction, cellAt.step);
-    } else {
-      this.table.addCell(rectangle);
+    // if (cellAt != null) {
+    //   rectangle.position.y += 5;
+    //   this.table.addCellAt(rectangle, cellAt.instruction, cellAt.step);
+    // } else {
+    //   this.table.addCell(rectangle);
+    // }
+
+    let i = this.instruction;
+    if (cellAt !== null) {
+      i = cellAt.instruction;
     }
+    const queue = this.timer.get(i) ?? new Queue<PIXI.Graphics>();
+    queue.enqueue(rectangle);
+    this.timer.set(i, queue);
+  }
+
+  public nextStep(): void {
+    for (const time of this.timer) {
+      const instruction = time[0];
+      const v = time[1];
+      const rec = v.dequeue();
+      if (rec !== null) {
+        this.table.addCell(rec, instruction);
+      }
+    }
+    const listArrows = this.listArrows.toArray()
+      .filter((value) => this.realStep === value.to.step);
+
+    for (const arrow of listArrows) {
+      this.drawArrow(arrow);
+    }
+
+    this.drawSteps();
+    this.realStep++;
   }
 
   public draw(): PIXI.Container {
@@ -266,57 +318,63 @@ export class PixiJSPipeline extends PIXI.Container {
     this.addChild(this.tableSteps.draw());
     this.addChild(this.tableInstructions.draw());
 
-    this.addChild(this.borderTop)
-    this.addChild(this.borderLeft)
-    this.addChild(this.borderTitle)
+    this.addChild(this.borderTop);
+    this.addChild(this.borderLeft);
+    this.addChild(this.borderTitle);
 
-    for (const arrow of this.arrows) {
-      this.addChild(arrow);
-    }
+    this.addChild(this.arrows);
+
     return this;
   }
 
   public moveLeft() {
-    // if (this.table.position.x > 200) {
     this.table.position.x -= 10;
     this.tableSteps.position.x -= 10;
-    for (const arrow of this.arrows) {
-      arrow.position.x -= 10;
-    }
-    // }
+    this.arrows.position.x -= 10;
   }
 
   public moveRight() {
     if (this.table.position.x < 200) {
       this.table.position.x += 10;
       this.tableSteps.position.x += 10;
-      for (const arrow of this.arrows) {
-        arrow.position.x += 10;
-      }
+      this.arrows.position.x += 10;
     }
   }
 
   public moveTop() {
-    // if (this.table.position.y > 50) {
     this.table.position.y -= 10;
     this.tableInstructions.y -= 10;
-    for (const arrow of this.arrows) {
-      arrow.position.y -= 10;
-    }
-    // }
+    this.arrows.position.y -= 10;
   }
 
   public moveBottom() {
     if (this.table.position.y < 50) {
       this.table.position.y += 10;
       this.tableInstructions.y += 10;
-      for (const arrow of this.arrows) {
-        arrow.position.y += 10;
-      }
+      this.arrows.position.y += 10;
     }
   }
 
-  toString() {
-    console.log(this.step, this.table);
+  public debug() {
+    const rectangle = new PIXI.Graphics();
+    rectangle.lineStyle(2.5, 0x002200, 1);
+    rectangle.beginFill(0x002200);
+    rectangle.drawRect(0, 0, 75, 25);
+    rectangle.endFill();
+    rectangle.zIndex = 11;
+    const step = new PIXI.Text('text', styleFontTextSteps);
+    step.position.x += (rectangle.width - step.width) / 2;
+    step.position.y += 5;
+    rectangle.addChild(step);
+
+    rectangle.position.y += 5;
+    this.table.addCell(rectangle, 0);
+  }
+
+  toString(): string {
+    return JSON.stringify({
+      step: this.step,
+      timer: this.timer,
+    });
   }
 }

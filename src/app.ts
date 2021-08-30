@@ -1,45 +1,38 @@
 import * as PIXI from 'pixi.js';
-import { Application, Text, Loader, Texture, Ticker } from 'pixi.js';
-import { PixiJSPipeline } from './PixiJSPipeline';
-import { PixiJSTable } from './PixiJSTable';
-import { PixiJSGrid } from './PixiJSGrid';
-
 import Keyboard from 'pixi.js-keyboard';
 import Mouse from 'pixi.js-mouse';
+import { PixiJSPipeline } from './PixiJSPipeline';
 
-import { Utils } from './Utils'
+import { Utils } from './Utils';
 
-var state;
-
+let state;
 
 // constants
 const SIZE = 1024;
-// const CENTER = SIZE / 2;
 
 // create and append app
-const app = new Application({
-  width: document.documentElement.clientWidth,
-  height: document.documentElement.clientHeight,
-  // width: SIZE * 2,
-  // height: SIZE,
+const app = new PIXI.Application({
+  // width: document.documentElement.clientWidth,
+  // height: document.documentElement.clientHeight,
+  width: SIZE * 2,
+  height: SIZE,
   backgroundColor: 0xDDDDDD, // light blue
   sharedTicker: true,
   sharedLoader: true,
-  // antialias: true,
-  // autoDensity: true,
-  // resolution: 2,
+  antialias: true,
+  autoDensity: true,
+  resolution: 2,
 });
 app.view.id = 'main';
 
-PIXI.settings.SORTABLE_CHILDREN = true
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+PIXI.settings.SORTABLE_CHILDREN = true;
+const pipeline = new PixiJSPipeline();
 
-
-
-app.view.addEventListener("resize", function () {
+app.view.addEventListener('resize', () => {
   app.renderer.resize(document.documentElement.clientWidth, document.documentElement.clientHeight);
-  pipeline.borderTop.width = document.documentElement.clientWidth
-  pipeline.borderLeft.height = document.documentElement.clientHeight
-
+  pipeline.borderTop.width = document.documentElement.clientWidth;
+  pipeline.borderLeft.height = document.documentElement.clientHeight;
 });
 
 app.view.addEventListener('contextmenu', (e) => {
@@ -47,45 +40,77 @@ app.view.addEventListener('contextmenu', (e) => {
   // e.preventDefault();
 });
 
+let iter = 0;
+pipeline.addInstruction('ADDI R28, R0, #4', {}, iter);
+iter++;
+pipeline.addInstruction('ADDI R17, R0, 0', {}, iter);
+iter++;
+pipeline.addInstruction('ADDI R18, R0, 0', {}, iter);
+iter++;
+pipeline.addInstruction('ADDI R26, R0, #32', {}, iter);
+iter++;
+pipeline.addInstruction('ADDI R29, R0, #1', { ID_stall: 2 }, iter);
+pipeline.addArrow({
+  start: {
+    instruction: 1,
+    step: 1,
+  },
+  to: {
+    instruction: 2,
+    step: 2,
+  },
+});
+const buttonAddInstruction = document.createElement('button');
+buttonAddInstruction.textContent = 'Add Instruction';
+buttonAddInstruction.addEventListener('click', () => {
+  pipeline.addInstruction('ADDI R26, R0, #32', {
+    IF: 1,
+    IF_stall: 0,
+    ID: 1,
+    ID_stall: 0,
+    intEX: 2,
+    MEM: 1,
+    WB: 1,
+  });
+});
 
+const buttonNextStep = document.createElement('button');
+buttonNextStep.textContent = 'Next step';
+buttonNextStep.addEventListener('click', () => {
+  pipeline.nextStep();
+});
 
-const pipeline = new PixiJSPipeline()
-pipeline.addInstruction("ADDI R28, R0, #4")
-pipeline.addInstruction("ADDI R29, R0, #1", { ID_stall: 2 }, [{ start: { instruction: 1, step: 1 }, to: { instruction: 2, step: 2 } }], 1)
-pipeline.addInstruction("ADDI R17, R0, 0")
-pipeline.addInstruction("ADDI R18, R0, 0")
-pipeline.addInstruction("ADDI R26, R0, #32")
+const buttonDebug = document.createElement('button');
+buttonDebug.textContent = 'Debug';
+buttonDebug.addEventListener('click', () => {
+  pipeline.debug();
+  console.log(pipeline.toString());
+});
 
-const button = document.createElement("button")
-button.textContent = "test"
-button.addEventListener("click", () => {
-  pipeline.addInstruction("nop", { IF: 1, IF_stall: 0, ID: 1, ID_stall: 0, intEX: 2, MEM: 1, WB: 1 })
-  pipeline.addInstruction("nop", { IF: 1, IF_stall: 0, ID: 1, ID_stall: 0, intEX: 1, intEX_stall: 1, MEM: 1, WB: 1 })
-  pipeline.draw()
-})
-document.querySelectorAll("body")[0].appendChild(button)
-document.querySelectorAll("body")[0].appendChild(document.createElement("br"))
+document.querySelectorAll('body')[0].appendChild(buttonAddInstruction);
+document.querySelectorAll('body')[0].appendChild(buttonNextStep);
+document.querySelectorAll('body')[0].appendChild(buttonDebug);
+document.querySelectorAll('body')[0].appendChild(document.createElement('br'));
 
 document.body.appendChild(app.view);
 
-const loader = Loader.shared;
-const ticker = Ticker.shared;
+const loader = PIXI.Loader.shared;
+const ticker = PIXI.Ticker.shared;
 
-let styleNoWrap = new PIXI.TextStyle({
-  fontFamily: "Arial",
+const styleNoWrap = new PIXI.TextStyle({
+  fontFamily: 'Arial',
   fontSize: 12,
-  fill: "white",
+  fill: 'white',
   stroke: '#000000',
   strokeThickness: 4,
   dropShadow: true,
-  dropShadowColor: "#000000",
+  dropShadowColor: '#000000',
   dropShadowBlur: 4,
   dropShadowAngle: Math.PI / 6,
   dropShadowDistance: 6,
 });
 
 loader.load((loader, resources) => {
-
   // Conainer
   // const table = new PixiJSTable(true, 10, 10, { x: 0, y: 0 }, { x: 0, y: 0 }, new Text(""))
   // table.addCell(new PIXI.Text("This is a large bit of text without word wrap to show you what happens when there's a large cell", styleNoWrap));
@@ -96,19 +121,18 @@ loader.load((loader, resources) => {
   // app.stage.addChild(grid.drawGrid())
 
   // Graphics
-  app.stage.addChild(pipeline.draw())
+  app.stage.addChild(pipeline.draw());
 
   // const pipeline2 = new PixiJSPipeline(5, 10)
   // pipeline2.table.position.x += 0
   // pipeline2.table.position.y += 200
   // app.stage.addChild(pipeline2.draw())
 
-  const fps = new Text('FPS: 0', { fill: 0xffffff });
-  fps.position.x = document.documentElement.clientWidth - 200
-  fps.position.y = 25
+  const fps = new PIXI.Text('FPS: 0', { fill: 0xffffff });
+  fps.position.x = document.documentElement.clientWidth - 200;
+  fps.position.y = 25;
 
   app.stage.addChild(fps);
-
 
   // const container = new PIXI.Container();
   // const text = new PIXI.Text("Texto")
@@ -118,36 +142,52 @@ loader.load((loader, resources) => {
     fps.text = `FPS: ${ticker.FPS.toFixed(2)}`;
     // hero.direction = getNextEntityDirection(app.view.width, hero);
     // hero.sprite.x = getNextEntityPosition(hero);
-  })
-})
-
-
-
-loader.onProgress.add(() => {
-  console.log("onProgress");
-});
-loader.onError.add(() => {
-  console.log("onError");
-});
-loader.onLoad.add(() => {
-  console.log("onLoad");
-});
-loader.onComplete.add(setup);
-loader.load()
-
-
-function setup() {
-  console.log("Setup");
-
-  // Set the game state
-  state = play;
-
-  // Start the game loop 
-  app.ticker.add(delta => gameLoop(delta));
-
-  Mouse.events.on('released', null, (buttonCode, event, mouseX, mouseY, mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) => {
-    console.log(buttonCode, event, mouseX, mouseY, mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY);
   });
+});
+
+/**/
+
+function play(delta) {
+  const speed = 5 * delta;
+
+  // Keyboard
+  if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
+    pipeline.moveRight();
+    // console.log("⬅");
+  }
+  if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {
+    pipeline.moveLeft();
+    // console.log("➡");
+  }
+  if (Keyboard.isKeyDown('ArrowUp', 'KeyW', 'KeyI')) {
+    pipeline.moveBottom();
+    // console.log("⬆");
+  }
+  if (Keyboard.isKeyDown('ArrowDown', 'KeyS', 'KeyK')) {
+    pipeline.moveTop();
+    // console.log("⬇");
+  }
+
+  // const objectPixi = {
+  //   x: 1,
+  //   y: 1,
+  //   rotation: 90,
+  // };
+
+  // Mouse
+  // objectPixi.rotation = Utils.getAngleTo(Mouse.getPosX(), Mouse.getPosY(), objectPixi.x, objectPixi.y);
+
+  if (Mouse.isButtonDown(Mouse.Button.RIGHT)) {
+    pipeline.moveLeft();
+    // objectPixi.x += Utils.getAngleX(speed, objectPixi.rotation);
+    // objectPixi.y += Utils.getAngleY(speed, objectPixi.rotation);
+  }
+
+  if (Mouse.isButtonDown(Mouse.Button.LEFT)) {
+    pipeline.moveRight();
+    // objectPixi.x -= Utils.getAngleX(speed, objectPixi.rotation);
+    // objectPixi.y -= Utils.getAngleY(speed, objectPixi.rotation);
+  }
 }
 
 function gameLoop(delta) {
@@ -158,43 +198,33 @@ function gameLoop(delta) {
   Mouse.update();
 }
 
-function play(delta) {
-  const speed = 5 * delta;
+function setup() {
+  console.log('Setup');
 
-  // Keyboard
-  if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
-    pipeline.moveLeft()
-    // console.log("⬅");
-  }
-  if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {
-    pipeline.moveRight()
-    // console.log("➡");
-  }
-  if (Keyboard.isKeyDown('ArrowUp', 'KeyW')) {
-    pipeline.moveTop()
-    // console.log("⬆");
-  }
-  if (Keyboard.isKeyDown('ArrowDown', 'KeyS')) {
-    pipeline.moveBottom()
-    // console.log("⬇");
-  }
+  // Set the game state
+  state = play;
 
-  let object_ = {
-    x: 1,
-    y: 1,
-    rotation: 90
-  }
+  // Start the game loop
+  app.ticker.add((delta) => gameLoop(delta));
 
-  // Mouse
-  object_.rotation = Utils.getAngleTo(Mouse.getPosX(), Mouse.getPosY(), object_.x, object_.y);
-
-  if (Mouse.isButtonDown(Mouse.Button.LEFT)) {
-    object_.x += Utils.getAngleX(speed, object_.rotation);
-    object_.y += Utils.getAngleY(speed, object_.rotation);
-  }
-
-  if (Mouse.isButtonDown(Mouse.Button.RIGHT)) {
-    object_.x -= Utils.getAngleX(speed, object_.rotation);
-    object_.y -= Utils.getAngleY(speed, object_.rotation);
-  }
+  Mouse.events.on('pressed', null, (buttonCode, event, mouseX, mouseY) => {
+    console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY);
+  });
+  Mouse.events.on('released', null, (buttonCode, event, mouseX, mouseY, mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) => {
+    console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY, 'mouseOriginX', mouseOriginX, 'mouseOriginY', mouseOriginY, 'mouseMoveX', mouseMoveX, 'mouseMoveY', mouseMoveY);
+  });
 }
+
+/**/
+
+loader.onProgress.add(() => {
+  console.log('onProgress');
+});
+loader.onError.add(() => {
+  console.log('onError');
+});
+loader.onLoad.add(() => {
+  console.log('onLoad');
+});
+loader.onComplete.add(setup);
+loader.load();

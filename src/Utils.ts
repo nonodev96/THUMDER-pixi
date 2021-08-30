@@ -9,11 +9,11 @@ export namespace Utils {
 
     export function getAngleTo(mx, my, px, py) {
         // var self = that;
-        var distX = my - py;
-        var distY = mx - px;
-        var angle = Math.atan2(distX, distY);
-        // var degrees = angle * 180/ Math.PI;
-        return angle;
+        const distX = my - py;
+        const distY = mx - px;
+        return Math.atan2(distX, distY);
+        // const angle = Math.atan2(distX, distY);
+        // const degrees = angle * 180/ Math.PI;
     }
 
     export function getAngleX(length, angle) {

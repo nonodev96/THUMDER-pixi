@@ -1,4 +1,6 @@
-import * as PIXI from "pixi.js";
+import * as PIXI from 'pixi.js';
+import { Graphics, InteractionData } from 'pixi.js';
+
 /**
  * @author: Luis Angel Garcia
  */
@@ -19,14 +21,18 @@ type paramLineConfig = {
 }
 
 /**
-* @description Utility class that draws a grid on the screen.
-* @extends PIXI.Graphics
-*/
+ * @description Utility class that draws a grid on the screen.
+ * @extends Graphics
+ */
 export class PixiJSGrid extends PIXI.Graphics {
   _correctedWidth: number;
+
   _cellSize: number;
+
   _useCorrectedWidth;
+
   _drawBoundaries;
+
   _gridWidth;
 
   /**
@@ -42,7 +48,6 @@ export class PixiJSGrid extends PIXI.Graphics {
    * The size of each cell in the grid.
    * If the value is **null**, the grid will use the default value.
    *
-   * @param {{ width: number, color: number, alpha: number, alignment: number, native: boolean }}. Object. Optional.
    *
    *  default:
    *  **{
@@ -55,6 +60,7 @@ export class PixiJSGrid extends PIXI.Graphics {
    *
    * Configuration for the line style on the object. See documentation on `PIXI.Graphics` for more on the `LineStyle` class.
    *
+   * @param lineConfig
    * @param {boolean} useCorrectedWidth boolean. Optional. default: **true**
    * If **true**, the grid will use the smallest perfect square greater than `width`.
    * Otherwise, the grid will use the exact value given by `width`.
@@ -63,13 +69,7 @@ export class PixiJSGrid extends PIXI.Graphics {
    * If **true**, the grid will draw its boundaries.
    * Otherwise, the grid will not draw its boundaries. Mouse pointer detection is not affected.
    */
-  constructor(
-    width: number,
-    cellSize: number = 10,
-    lineConfig: paramLineConfig = { width: 1, color: 0xffffff, alpha: 1, alignment: 0.5, native: true },
-    useCorrectedWidth: boolean = true,
-    drawBoundaries: boolean = true
-  ) {
+  constructor(width: number, cellSize = 10, lineConfig: paramLineConfig = DEFAULT_LINE_STYLE, useCorrectedWidth = true, drawBoundaries = true) {
     super();
 
     this._cellSize = 10;
@@ -89,18 +89,18 @@ export class PixiJSGrid extends PIXI.Graphics {
 
     // handle mouse move
     this.interactive = true;
-    this.on("mousemove", (evt) => {
+    this.on('mousemove', (evt) => {
       const mouseCoords = evt.data.global;
       // check if the mouse is within the bounds of this grid. If not, do nothing.
       if (
-        mouseCoords.x >= this.bounds.x1 &&
-        mouseCoords.x <= this.bounds.x2 &&
-        mouseCoords.y >= this.bounds.y1 &&
-        mouseCoords.y <= this.bounds.y2
+        mouseCoords.x >= this.bounds.x1
+        && mouseCoords.x <= this.bounds.x2
+        && mouseCoords.y >= this.bounds.y1
+        && mouseCoords.y <= this.bounds.y2
       ) {
         const gridCoords = this.getCellCoordinates(
           mouseCoords.x,
-          mouseCoords.y
+          mouseCoords.y,
         );
         this.onMousemove(evt, gridCoords);
       }
@@ -178,22 +178,21 @@ export class PixiJSGrid extends PIXI.Graphics {
     return Math.abs(this.cellSize - Math.sqrt(this._correctedWidth)) <= 1e-6 ? this._correctedWidth : this._gridWidth;
   }
 
-
   /**
    * Draws the grid to the containing PIXI stage
    */
   draw(): PIXI.Graphics {
     this.clearGrid(true);
     for (let i = this._drawBoundaries ? 0 : 1; i <= this.amtLines - (this._drawBoundaries ? 0 : 1); i += 1) {
-      const startCoord = i * this._cellSize;
+      const startCoords = i * this._cellSize;
 
       // draw the column
-      this.moveTo(startCoord, 0);
-      this.lineTo(startCoord, this._correctedWidth);
+      this.moveTo(startCoords, 0);
+      this.lineTo(startCoords, this._correctedWidth);
 
       // draw the row
-      this.moveTo(0, startCoord);
-      this.lineTo(this._correctedWidth, startCoord);
+      this.moveTo(0, startCoords);
+      this.lineTo(this._correctedWidth, startCoords);
     }
     this.endFill();
 
@@ -208,12 +207,18 @@ export class PixiJSGrid extends PIXI.Graphics {
    * When **true**, the configuration for the line style object is preserved.
    * Otherwise, the object's line style will revert to the defaults specified by the `PIXI.Graphics` object.
    */
-  clearGrid(retainLineStyle = true) {
-    const { width, alignment, color, alpha, native } = this.line;
+  clearGrid(retainLineStyle = true): PixiJSGrid {
+    const {
+      width,
+      alignment,
+      color,
+      alpha,
+      native,
+    } = this.line;
     this.clear();
 
     if (!retainLineStyle) {
-      return;
+      throw new Error('Retain Line Style');
     }
     this.lineStyle(width, color, alpha, alignment, native);
 
@@ -238,13 +243,13 @@ export class PixiJSGrid extends PIXI.Graphics {
   /**
    * Callback fired after detecting a mousemove event.
    *
-   * @param {PIXI.InteractionData} evt
+   * @param {InteractionData} evt
    * The `PIXI.InteractionData` captured by the event.
    *
    * @param {{x: number, y: number}} gridCoords
    * The grid-level coordinates captured by the event.
    */
-  onMousemove(evt: PIXI.InteractionData, gridCoords: { x: number, y: number }) {
+  onMousemove(evt: PIXI.InteractionData, gridCoords: { x: number, y: number }): void {
 
   }
 

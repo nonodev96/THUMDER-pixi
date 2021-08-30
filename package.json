@@ -24,6 +24,7 @@
     "typescript"
   ],
   "dependencies": {
+    "datastructures-js": "^10.1.1",
     "pixi.js": "6.1.2",
     "pixi.js-keyboard": "^1.1.6",
     "pixi.js-mouse": "^1.1.6"
@@ -33,14 +34,16 @@
     "@babel/preset-env": "7.14.2",
     "@types/node": "15.6.0",
     "@types/pixi.js": "5.0.0",
-    "@typescript-eslint/eslint-plugin": "4.24.0",
-    "@typescript-eslint/parser": "4.24.0",
+    "@typescript-eslint/eslint-plugin": "^4.29.3",
+    "@typescript-eslint/parser": "^4.29.3",
     "babel-loader": "8.2.2",
     "clean-webpack-plugin": "3.0.0",
     "copy-webpack-plugin": "9.0.0",
     "css-loader": "5.2.5",
     "eslint": "7.27.0",
+    "eslint-config-airbnb": "^18.2.1",
     "eslint-config-airbnb-base": "14.2.1",
+    "eslint-config-airbnb-typescript": "^14.0.0",
     "eslint-plugin-import": "2.23.3",
     "file-loader": "6.2.0",
     "html-webpack-plugin": "5.3.1",

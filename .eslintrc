@@ -1,0 +1,91 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "rules": {
+    /*
+    "linebreak-style": [
+      "error",
+      "windows"
+    ],
+    "keyword-spacing": [
+      "off"
+    ],
+    "camelcase": "off",
+    "no-console": "off",
+    "no-void": "off",
+    "no-shadow": "off",
+    "prefer-const": "off",
+    "no-param-reassign": "off",
+    "max-len": "off",
+    "guard-for-in": "off",
+    "prefer-object-spread": "off",
+    "no-loop-func": "off",
+    "no-empty-function": "warn",
+    "class-methods-use-this": "off",
+    "import/prefer-default-export": "off",
+    "no-restricted-syntax": [
+      "error",
+      "BinaryExpression[operator='of']",
+      "BinaryExpression[operator='in']"
+    ],
+    "no-underscore-dangle": [
+      "off",
+      {
+        "allowAfterThis": true
+      }
+    ],
+    "no-plusplus": [
+      "off"
+    ],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/type-annotation-spacing": [
+      "error",
+      {
+        "before": false,
+        "after": true,
+        "overrides": {
+          "arrow": {
+            "before": true,
+            "after": true
+          }
+        }
+      }
+    ],
+    */
+    "@typescript-eslint/no-this-alias": "off",
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-empty-function": "warn",
+    //    "@typescript-eslint/no-unused-vars": [
+    //      "error",
+    //      {
+    //        "argsIgnorePattern": "^_"
+    //      }
+    //    ],
+    "import/extensions": [
+      "off",
+      "ignorePackages",
+      {
+        "js": "never",
+        "ts": "never"
+      }
+    ]
+  }
+}
