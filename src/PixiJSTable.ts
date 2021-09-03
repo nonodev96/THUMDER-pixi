@@ -22,9 +22,9 @@ export class PixiJSTable extends PIXI.Container {
 
   private readonly rows: any[] | PIXI.Container[];
 
-  private rowCount: number;
+  public rowCount: number;
 
-  private maxCols: number;
+  public maxCols: number;
 
   /**
    * Ivoke to get a new Table.

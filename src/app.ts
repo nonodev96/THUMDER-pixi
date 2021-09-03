@@ -40,15 +40,11 @@ app.view.addEventListener('contextmenu', (e) => {
   // e.preventDefault();
 });
 
-let iter = 0;
+const iter = 0;
 pipeline.addInstruction('ADDI R28, R0, #4', {}, iter);
-iter++;
 pipeline.addInstruction('ADDI R17, R0, 0', {}, iter);
-iter++;
 pipeline.addInstruction('ADDI R18, R0, 0', {}, iter);
-iter++;
-pipeline.addInstruction('ADDI R26, R0, #32', {}, iter);
-iter++;
+pipeline.addInstruction('ADDI R26, R0, #32', { IF_stall: 2 }, iter);
 pipeline.addInstruction('ADDI R29, R0, #1', { ID_stall: 2 }, iter);
 pipeline.addArrow({
   start: {
@@ -60,6 +56,7 @@ pipeline.addArrow({
     step: 2,
   },
 });
+
 const buttonAddInstruction = document.createElement('button');
 buttonAddInstruction.textContent = 'Add Instruction';
 buttonAddInstruction.addEventListener('click', () => {
@@ -80,6 +77,20 @@ buttonNextStep.addEventListener('click', () => {
   pipeline.nextStep();
 });
 
+const buttonNextStepX10 = document.createElement('button');
+buttonNextStepX10.textContent = 'Next step (x10)';
+buttonNextStepX10.addEventListener('click', () => {
+  for (let i = 0; i < 10; i++) {
+    pipeline.nextStep();
+  }
+});
+
+const buttonReset = document.createElement('button');
+buttonReset.textContent = 'Reset';
+buttonReset.addEventListener('click', () => {
+  pipeline.reset();
+});
+
 const buttonDebug = document.createElement('button');
 buttonDebug.textContent = 'Debug';
 buttonDebug.addEventListener('click', () => {
@@ -89,6 +100,8 @@ buttonDebug.addEventListener('click', () => {
 
 document.querySelectorAll('body')[0].appendChild(buttonAddInstruction);
 document.querySelectorAll('body')[0].appendChild(buttonNextStep);
+document.querySelectorAll('body')[0].appendChild(buttonNextStepX10);
+document.querySelectorAll('body')[0].appendChild(buttonReset);
 document.querySelectorAll('body')[0].appendChild(buttonDebug);
 document.querySelectorAll('body')[0].appendChild(document.createElement('br'));
 
@@ -109,8 +122,6 @@ const styleNoWrap = new PIXI.TextStyle({
   dropShadowAngle: Math.PI / 6,
   dropShadowDistance: 6,
 });
-
-
 
 /**/
 

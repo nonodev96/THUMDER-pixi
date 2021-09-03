@@ -1,22 +1,27 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2015",
+    "lib": [ "ES2018", "dom" ],
+    "target": "ES2018",
+    "sourceMap": true,
     "declaration": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
     "noImplicitAny": false,
     "noImplicitReturns": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
-    "src/**/*"
+    "./src/**/*"
   ],
   "exclude": [
     "node_modules",
+    "src/app.ts",
+    "test",
     "**/*.spec.ts",
-    "./dist"
   ]
 }

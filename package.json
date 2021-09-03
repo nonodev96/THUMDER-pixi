@@ -1,6 +1,6 @@
 {
   "name": "pixi-pipeline",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Pipeline WinDLX with [pixi.js & webpack & typescript]",
   "author": "nonodev96",
   "license": "ISC",
@@ -14,7 +14,8 @@
   "main": "./src/app.ts",
   "scripts": {
     "start": "webpack serve --open --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "pixijs",

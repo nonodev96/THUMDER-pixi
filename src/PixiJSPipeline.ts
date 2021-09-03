@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { LinkedList, Queue } from 'datastructures-js';
 import { PixiJSTable } from './PixiJSTable';
+import { Utils } from './Utils';
 
 const styleFontTextInstruction = new PIXI.TextStyle({
   fontFamily: 'Arial',
@@ -88,7 +89,7 @@ export class PixiJSPipeline extends PIXI.Container {
 
   realStep: number;
 
-  step: number;
+  stepToStart: number;
 
   instruction: number;
 
@@ -106,7 +107,7 @@ export class PixiJSPipeline extends PIXI.Container {
 
     this.instruction = 0;
     this.realStep = 0;
-    this.step = 0;
+    this.stepToStart = 0;
 
     this.borderTitle = new PIXI.Graphics();
     this.borderLeft = new PIXI.Graphics();
@@ -117,6 +118,32 @@ export class PixiJSPipeline extends PIXI.Container {
 
     this.initTables();
     this.drawBorders();
+  }
+
+  public reset() {
+    this.arrows = new PIXI.Graphics();
+    console.log(this.table.rowCount);
+    console.log(this.tableInstructions.rowCount);
+    console.log(this.tableSteps.maxCols);
+
+    for (let i = this.table.rowCount - 1; i >= 0; i--) {
+      this.table.deleteRow(i);
+    }
+
+    for (let i = this.tableInstructions.rowCount - 1; i >= 0; i--) {
+      this.tableInstructions.deleteRow(i);
+    }
+
+    for (let i = 0; i < this.tableSteps.maxCols; i++) {
+      this.tableSteps.deleteCell(0, 0);
+    }
+
+    this.instruction = 0;
+    this.realStep = 0;
+    this.stepToStart = 0;
+
+    this.timer = new Map();
+    this.listArrows = new LinkedList();
   }
 
   private initTables() {
@@ -166,19 +193,20 @@ export class PixiJSPipeline extends PIXI.Container {
     this.borderTop.zIndex = 4;
   }
 
-  public addInstruction(text: string, pipe: Pipe = defaultPipe, waitToStep = 0) {
+  public addInstruction(text: string, pipe: Pipe = defaultPipe, stepsToWait = 0) {
     this.drawInstruction(text);
 
-    for (let i = 0; i < waitToStep; i++) {
+    for (let i = 0; i < this.stepToStart + stepsToWait; i++) {
       this.drawPipe('', 0xCCCCCC, 0xBBBBBB, {
         instruction: this.instruction,
         step: i,
       });
     }
 
-    const initStep = this.step;
     for (let i = 0; i < (pipe.IF_stall ?? defaultPipe.IF_stall); i++) this.drawPipe('💣', 0xFFFF00);
     for (let i = 0; i < (pipe.IF ?? defaultPipe.IF); i++) this.drawPipe('IF', 0xFFFF00);
+    this.stepToStart += (pipe.IF_stall ?? defaultPipe.IF_stall);
+    this.stepToStart += (pipe.IF ?? defaultPipe.IF);
 
     for (let i = 0; i < (pipe.ID_stall ?? defaultPipe.ID_stall); i++) this.drawPipe('💣', 0xFF9900);
     for (let i = 0; i < (pipe.ID ?? defaultPipe.ID); i++) this.drawPipe('ID', 0xFF9900);
@@ -191,7 +219,6 @@ export class PixiJSPipeline extends PIXI.Container {
 
     for (let i = 0; i < (pipe.WB_stall ?? defaultPipe.WB_stall); i++) this.drawPipe('💣', 0xFF00FF);
     for (let i = 0; i < (pipe.WB ?? defaultPipe.WB); i++) this.drawPipe('WB', 0xFF00FF);
-    this.step = initStep;
 
     this.table.addRow();
     this.instruction++;
@@ -246,8 +273,8 @@ export class PixiJSPipeline extends PIXI.Container {
     text.position.y += ((rectangle.height - text.height) / 2) - 2.5;
     rectangle.addChild(text);
 
-    this.tableInstructions.addCell(rectangle);
     this.tableInstructions.addRow();
+    this.tableInstructions.addCell(rectangle);
   }
 
   private drawSteps() {
@@ -294,9 +321,11 @@ export class PixiJSPipeline extends PIXI.Container {
   }
 
   public nextStep(): void {
-    for (const time of this.timer) {
-      const instruction = time[0];
-      const v = time[1];
+    const result = Utils.MapToArray(this.timer);
+
+    for (const time of result) {
+      const instruction = time.key;
+      const v = time.value;
       const rec = v.dequeue();
       if (rec !== null) {
         this.table.addCell(rec, instruction);
@@ -373,7 +402,7 @@ export class PixiJSPipeline extends PIXI.Container {
 
   toString(): string {
     return JSON.stringify({
-      step: this.step,
+      step: this.stepToStart,
       timer: this.timer,
     });
   }
