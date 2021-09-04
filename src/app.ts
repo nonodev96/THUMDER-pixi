@@ -1,9 +1,10 @@
 import * as PIXI from 'pixi.js';
 import Keyboard from 'pixi.js-keyboard';
 import Mouse from 'pixi.js-mouse';
-import { PixiJSPipeline } from './PixiJSPipeline';
+import { PixiTHUMER_CycleClockDiagram } from './PixiTHUMER_CycleClockDiagram';
+import { PixiTHUMER_Pipeline } from './PixiTHUMER_Pipeline';
 
-import { Utils } from './Utils';
+import { PixiUtils } from './PixiUtils';
 
 let state;
 
@@ -27,12 +28,19 @@ app.view.id = 'main';
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 PIXI.settings.SORTABLE_CHILDREN = true;
-const pipeline = new PixiJSPipeline();
+
+const loader = PIXI.Loader.shared;
+const ticker = PIXI.Ticker.shared;
+
+const pipeline = new PixiTHUMER_Pipeline();
+
+/*
+const cycleClockDiagram = new PixiTHUMER_CycleClockDiagram();
 
 app.view.addEventListener('resize', () => {
   app.renderer.resize(document.documentElement.clientWidth, document.documentElement.clientHeight);
-  pipeline.borderTop.width = document.documentElement.clientWidth;
-  pipeline.borderLeft.height = document.documentElement.clientHeight;
+  cycleClockDiagram.borderTop.width = document.documentElement.clientWidth;
+  cycleClockDiagram.borderLeft.height = document.documentElement.clientHeight;
 });
 
 app.view.addEventListener('contextmenu', (e) => {
@@ -41,12 +49,12 @@ app.view.addEventListener('contextmenu', (e) => {
 });
 
 const iter = 0;
-pipeline.addInstruction('ADDI R28, R0, #4', {}, iter);
-pipeline.addInstruction('ADDI R17, R0, 0', {}, iter);
-pipeline.addInstruction('ADDI R18, R0, 0', {}, iter);
-pipeline.addInstruction('ADDI R26, R0, #32', { IF_stall: 2 }, iter);
-pipeline.addInstruction('ADDI R29, R0, #1', { ID_stall: 2 }, iter);
-pipeline.addArrow({
+cycleClockDiagram.addInstruction('ADDI R28, R0, #4', {}, iter);
+cycleClockDiagram.addInstruction('ADDI R17, R0, 0', {}, iter);
+cycleClockDiagram.addInstruction('ADDI R18, R0, 0', {}, iter);
+cycleClockDiagram.addInstruction('ADDI R26, R0, #32', { IF_stall: 2 }, iter);
+cycleClockDiagram.addInstruction('ADDI R29, R0, #1', { ID_stall: 2 }, iter);
+cycleClockDiagram.addArrow({
   start: {
     instruction: 1,
     step: 1,
@@ -60,7 +68,7 @@ pipeline.addArrow({
 const buttonAddInstruction = document.createElement('button');
 buttonAddInstruction.textContent = 'Add Instruction';
 buttonAddInstruction.addEventListener('click', () => {
-  pipeline.addInstruction('ADDI R26, R0, #32', {
+  cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {
     IF: 1,
     IF_stall: 0,
     ID: 1,
@@ -74,28 +82,28 @@ buttonAddInstruction.addEventListener('click', () => {
 const buttonNextStep = document.createElement('button');
 buttonNextStep.textContent = 'Next step';
 buttonNextStep.addEventListener('click', () => {
-  pipeline.nextStep();
+  cycleClockDiagram.nextStep();
 });
 
 const buttonNextStepX10 = document.createElement('button');
 buttonNextStepX10.textContent = 'Next step (x10)';
 buttonNextStepX10.addEventListener('click', () => {
   for (let i = 0; i < 10; i++) {
-    pipeline.nextStep();
+    cycleClockDiagram.nextStep();
   }
 });
 
 const buttonReset = document.createElement('button');
 buttonReset.textContent = 'Reset';
 buttonReset.addEventListener('click', () => {
-  pipeline.reset();
+  cycleClockDiagram.reset();
 });
 
 const buttonDebug = document.createElement('button');
 buttonDebug.textContent = 'Debug';
 buttonDebug.addEventListener('click', () => {
-  pipeline.debug();
-  console.log(pipeline.toString());
+  cycleClockDiagram.debug();
+  console.log(cycleClockDiagram.toString());
 });
 
 document.querySelectorAll('body')[0].appendChild(buttonAddInstruction);
@@ -105,10 +113,7 @@ document.querySelectorAll('body')[0].appendChild(buttonReset);
 document.querySelectorAll('body')[0].appendChild(buttonDebug);
 document.querySelectorAll('body')[0].appendChild(document.createElement('br'));
 
-document.body.appendChild(app.view);
 
-const loader = PIXI.Loader.shared;
-const ticker = PIXI.Ticker.shared;
 
 const styleNoWrap = new PIXI.TextStyle({
   fontFamily: 'Arial',
@@ -122,28 +127,29 @@ const styleNoWrap = new PIXI.TextStyle({
   dropShadowAngle: Math.PI / 6,
   dropShadowDistance: 6,
 });
-
-/**/
+*/
+document.body.appendChild(app.view);
 
 function play(delta) {
   const speed = 5 * delta;
 
   // Keyboard
   if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
-    pipeline.moveRight();
-    // console.log("⬅");
+    pipeline.update_ID_text("prueba\n$TEXT 0x10")
+    // cycleClockDiagram.moveRight();
+    
   }
   if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {
-    pipeline.moveLeft();
-    // console.log("➡");
+    // cycleClockDiagram.moveLeft();
+    
   }
   if (Keyboard.isKeyDown('ArrowUp', 'KeyW', 'KeyI')) {
-    pipeline.moveBottom();
-    // console.log("⬆");
+    // cycleClockDiagram.moveBottom();
+    
   }
   if (Keyboard.isKeyDown('ArrowDown', 'KeyS', 'KeyK')) {
-    pipeline.moveTop();
-    // console.log("⬇");
+    // cycleClockDiagram.moveTop();
+    
   }
 
   // const objectPixi = {
@@ -153,18 +159,16 @@ function play(delta) {
   // };
 
   // Mouse
-  // objectPixi.rotation = Utils.getAngleTo(Mouse.getPosX(), Mouse.getPosY(), objectPixi.x, objectPixi.y);
+  // objectPixi.rotation = PixiUtils.getAngleTo(Mouse.getPosX(), Mouse.getPosY(), objectPixi.x, objectPixi.y);
 
   if (Mouse.isButtonDown(Mouse.Button.RIGHT)) {
-    pipeline.moveLeft();
-    // objectPixi.x += Utils.getAngleX(speed, objectPixi.rotation);
-    // objectPixi.y += Utils.getAngleY(speed, objectPixi.rotation);
+    // objectPixi.x += PixiUtils.getAngleX(speed, objectPixi.rotation);
+    // objectPixi.y += PixiUtils.getAngleY(speed, objectPixi.rotation);
   }
 
   if (Mouse.isButtonDown(Mouse.Button.LEFT)) {
-    pipeline.moveRight();
-    // objectPixi.x -= Utils.getAngleX(speed, objectPixi.rotation);
-    // objectPixi.y -= Utils.getAngleY(speed, objectPixi.rotation);
+    // objectPixi.x -= PixiUtils.getAngleX(speed, objectPixi.rotation);
+    // objectPixi.y -= PixiUtils.getAngleY(speed, objectPixi.rotation);
   }
 }
 
@@ -193,7 +197,6 @@ function setup() {
   });
 }
 
-/**/
 
 loader.onProgress.add(() => {
   console.log('onProgress');
@@ -216,12 +219,14 @@ loader.load((loader, resources) => {
   // app.stage.addChild(grid.drawGrid())
 
   // Graphics
+  // app.stage.addChild(cycleClockDiagram.draw());
+
   app.stage.addChild(pipeline.draw());
 
-  // const pipeline2 = new PixiJSPipeline(5, 10)
-  // pipeline2.table.position.x += 0
-  // pipeline2.table.position.y += 200
-  // app.stage.addChild(pipeline2.draw())
+  // const cycleClockDiagram2 = new PixiJScycleClockDiagram(5, 10)
+  // cycleClockDiagram2.table.position.x += 0
+  // cycleClockDiagram2.table.position.y += 200
+  // app.stage.addChild(cycleClockDiagram2.draw())
 
   const fps = new PIXI.Text('FPS: 0', { fill: 0xffffff });
   fps.position.x = document.documentElement.clientWidth - 200;

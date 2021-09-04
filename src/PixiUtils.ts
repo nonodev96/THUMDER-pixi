@@ -1,4 +1,4 @@
-export namespace Utils {
+export namespace PixiUtils {
   export function getRandomInt(min, max): number {
     min = Math.ceil(min);
     max = Math.floor(max);

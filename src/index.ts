@@ -1,11 +1,13 @@
-import { Utils } from './Utils';
+import { PixiUtils } from './PixiUtils';
 import { PixiJSTable } from './PixiJSTable';
 import { PixiJSGrid } from './PixiJSGrid';
-import { PixiJSPipeline, CellPosition, ArrowDirection, Pipe, defaultPipe } from './PixiJSPipeline';
+import { PixiTHUMER_CycleClockDiagram, CellPosition, ArrowDirection, CycleType, defaultCycle } from './PixiTHUMER_CycleClockDiagram';
+import { PixiTHUMER_Pipeline } from './PixiTHUMER_Pipeline';
 
 export {
-  Utils,
+  PixiUtils as Utils,
   PixiJSTable,
   PixiJSGrid,
-  PixiJSPipeline, CellPosition, ArrowDirection, Pipe, defaultPipe
+  PixiTHUMER_CycleClockDiagram, CellPosition, ArrowDirection, CycleType, defaultCycle,
+  PixiTHUMER_Pipeline
 };
