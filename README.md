@@ -1,56 +1,52 @@
-pixi-pipeline
+THUMDER-pixi
 =============
 
 ## Define PIXI Application
 
 ```ts
 const app = new PIXI.Application({
-  width: SIZE * 2,
-  height: SIZE,
-  backgroundColor: 0xDDDDDD,
-  sharedTicker: true,
-  sharedLoader: true,
-  antialias: true,
-  autoDensity: true,
-  resolution: 2,
+    width: SIZE * 2,
+    height: SIZE,
+    backgroundColor: 0xDDDDDD,
+    sharedTicker: true,
+    sharedLoader: true,
+    antialias: true,
+    autoDensity: true,
+    resolution: 2,
 });
 app.view.id = 'main';
 ```
 
-## Pipeline Methods
+## Cycle Clock Diagram Methods
 
 ```ts
-const pipeline = new PixiJSPipeline();
+const cycleClockDiagram = new PixiTHUMER_CycleClockDiagram();
 
-let iter = 0;
-pipeline.addInstruction('ADDI R28, R0, #4', {}, iter);
-iter++;
-pipeline.addInstruction('ADDI R17, R0, 0', {}, iter);
-iter++;
-pipeline.addInstruction('ADDI R18, R0, 0', {}, iter);
-iter++;
-pipeline.addInstruction('ADDI R26, R0, #32', {}, iter);
-iter++;
-pipeline.addInstruction('ADDI R29, R0, #1', { ID_stall: 2 }, iter);
-pipeline.addArrow({
-  start: {
-    instruction: 1,
-    step: 1,
-  },
-  to: {
-    instruction: 2,
-    step: 2,
-  },
+
+cycleClockDiagram.addInstruction('ADDI R28, R0, #4', {});
+cycleClockDiagram.addInstruction('ADDI R17, R0, 0', {});
+cycleClockDiagram.addInstruction('ADDI R18, R0, 0', {});
+cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {});
+cycleClockDiagram.addInstruction('ADDI R29, R0, #1', {ID_stall: 2});
+cycleClockDiagram.addArrow({
+    start: {
+        instruction: 1,
+        step: 1,
+    },
+    to: {
+        instruction: 2,
+        step: 2,
+    },
 });
 
-pipeline.nextStep();
-pipeline.debug();
+cycleClockDiagram.nextStep();
+cycleClockDiagram.debug();
 ```
 
-### Add Pipeline interface
+### Add Cycle Clock Diagram interface
 
 ```ts
-app.stage.addChild(pipeline.draw());
+app.stage.addChild(cycleClockDiagram.draw());
 ```
 
 ## Pixi init
@@ -59,68 +55,68 @@ app.stage.addChild(pipeline.draw());
 let state;
 
 function play(delta) {
-  const speed = 5 * delta;
-  if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
-    pipeline.moveRight();
-  }
-  if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {
-    pipeline.moveLeft();
-  }
-  if (Keyboard.isKeyDown('ArrowUp', 'KeyW', 'KeyI')) {
-    pipeline.moveBottom();
-  }
-  if (Keyboard.isKeyDown('ArrowDown', 'KeyS', 'KeyK')) {
-    pipeline.moveTop();
-  }
+    const speed = 5 * delta;
+    if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
+        cycleClockDiagram.moveRight();
+    }
+    if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {
+        cycleClockDiagram.moveLeft();
+    }
+    if (Keyboard.isKeyDown('ArrowUp', 'KeyW', 'KeyI')) {
+        cycleClockDiagram.moveBottom();
+    }
+    if (Keyboard.isKeyDown('ArrowDown', 'KeyS', 'KeyK')) {
+        cycleClockDiagram.moveTop();
+    }
 }
 
 function gameLoop(delta) {
-  state(delta);
+    state(delta);
 
-  Keyboard.update();
-  Mouse.update();
+    Keyboard.update();
+    Mouse.update();
 }
 
 function setup() {
-  console.log('Setup');
+    console.log('Setup');
 
-  // Set the game state
-  state = play;
+    // Set the game state
+    state = play;
 
-  // Start the game loop
-  app.ticker.add((delta) => gameLoop(delta));
+    // Start the game loop
+    app.ticker.add((delta) => gameLoop(delta));
 
-  Mouse.events.on('pressed', null, (buttonCode, event, mouseX, mouseY) => {
-    console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY);
-  });
-  Mouse.events.on('released', null, (buttonCode, event, mouseX, mouseY, mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) => {
-    console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY, 'mouseOriginX', mouseOriginX, 'mouseOriginY', mouseOriginY, 'mouseMoveX', mouseMoveX, 'mouseMoveY', mouseMoveY);
-  });
+    Mouse.events.on('pressed', null, (buttonCode, event, mouseX, mouseY) => {
+        console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY);
+    });
+    Mouse.events.on('released', null, (buttonCode, event, mouseX, mouseY, mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) => {
+        console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY, 'mouseOriginX', mouseOriginX, 'mouseOriginY', mouseOriginY, 'mouseMoveX', mouseMoveX, 'mouseMoveY', mouseMoveY);
+    });
 }
 
 loader.onProgress.add(() => {
-  console.log('onProgress');
+    console.log('onProgress');
 });
 loader.onError.add(() => {
-  console.log('onError');
+    console.log('onError');
 });
 loader.onLoad.add(() => {
-  console.log('onLoad');
+    console.log('onLoad');
 });
 loader.onComplete.add(setup);
 
 loader.load((loader, resources) => {
-  // Add pipeline
-  app.stage.addChild(pipeline.draw());
+    // Add cycleClockDiagram
+    app.stage.addChild(cycleClockDiagram.draw());
 
-  const fps = new PIXI.Text('FPS: 0', { fill: 0xffffff });
-  fps.position.x = document.documentElement.clientWidth - 200;
-  fps.position.y = 25;
+    const fps = new PIXI.Text('FPS: 0', {fill: 0xffffff});
+    fps.position.x = document.documentElement.clientWidth - 200;
+    fps.position.y = 25;
 
-  app.stage.addChild(fps);
+    app.stage.addChild(fps);
 
-  app.ticker.add((delta) => {
-    fps.text = `FPS: ${ticker.FPS.toFixed(2)}`;
-  });
+    app.ticker.add((delta) => {
+        fps.text = `FPS: ${ticker.FPS.toFixed(2)}`;
+    });
 });
 ```

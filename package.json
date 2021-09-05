@@ -1,5 +1,5 @@
 {
-  "name": "pixi-pipeline",
+  "name": "thumder-pixi",
   "version": "1.0.2",
   "description": "Pipeline WinDLX with [pixi.js & webpack & typescript]",
   "author": "nonodev96",
