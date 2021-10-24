@@ -1,10 +1,7 @@
 import * as PIXI from 'pixi.js';
 import Keyboard from 'pixi.js-keyboard';
 import Mouse from 'pixi.js-mouse';
-import { PixiTHUMER_CycleClockDiagram } from './PixiTHUMER_CycleClockDiagram';
 import { PixiTHUMER_Pipeline } from './PixiTHUMER_Pipeline';
-
-import { PixiUtils } from './PixiUtils';
 
 let state;
 
@@ -137,6 +134,7 @@ function play(delta) {
   if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
     pipeline.update_ID_text("prueba\n$TEXT 0x10")
     // cycleClockDiagram.moveRight();
+    pipeline.update_faddEX_text(7, 'pepe')
     
   }
   if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {

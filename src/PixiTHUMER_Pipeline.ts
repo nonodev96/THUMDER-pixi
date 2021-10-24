@@ -8,9 +8,9 @@ export type CoordsType = {
 
 const styleFontTextPipe = new PIXI.TextStyle({
     fontFamily: 'Arial',
-    fontSize: 20,
-    fill: 'black',
-    stroke: '#000000',
+    fontSize:   18,
+    fill:       'black',
+    stroke:     '#000000',
     // strokeThickness: 0,
     // dropShadow: true,
     // dropShadowColor: "#000000",
@@ -21,9 +21,9 @@ const styleFontTextPipe = new PIXI.TextStyle({
 
 const styleFontTextBox = new PIXI.TextStyle({
     fontFamily: 'Arial',
-    fontSize: 18,
-    fill: 'black',
-    stroke: '#000000',
+    fontSize:   18,
+    fill:       'black',
+    stroke:     '#000000',
     // strokeThickness: 0,
     // dropShadow: true,
     // dropShadowColor: "#000000",
@@ -34,27 +34,46 @@ const styleFontTextBox = new PIXI.TextStyle({
 
 export class PixiTHUMER_Pipeline extends PIXI.Container {
 
-    private IntStages_text: PIXI.Text
-    private IF_text: PIXI.Text
-    private ID_text: PIXI.Text
-    private intEX_text: PIXI.Text
-    private faddEX_text: PIXI.Text
-    private fmultEX_text: PIXI.Text
-    private fdivEX_text: PIXI.Text
-    private MEM_text: PIXI.Text
-    private WB_text: PIXI.Text
+    private readonly IntStages_text: PIXI.Text
+    private readonly IF_text: PIXI.Text
+    private readonly ID_text: PIXI.Text
+    private readonly intEX_text: PIXI.Text
 
-    constructor() {
+    private readonly faddEX_array: Array<PIXI.Text>
+    private readonly fmultEX_array: Array<PIXI.Text>
+    private readonly fdivEX_array: Array<PIXI.Text>
+
+    private readonly MEM_text: PIXI.Text
+    private readonly WB_text: PIXI.Text
+
+    private readonly faddEX_count;
+    private readonly fmultEX_count;
+    private readonly fdivEX_count;
+
+    constructor(faddEX_count = 1, fmultEX_count = 8, fdivEX_count = 8) {
         super()
         this.IntStages_text = new PIXI.Text("Int-Stages")
         this.IF_text = new PIXI.Text("test", styleFontTextBox)
         this.ID_text = new PIXI.Text("test", styleFontTextBox)
         this.intEX_text = new PIXI.Text("test", styleFontTextBox)
-        this.faddEX_text = new PIXI.Text("test", styleFontTextBox)
-        this.fmultEX_text = new PIXI.Text("test", styleFontTextBox)
-        this.fdivEX_text = new PIXI.Text("test", styleFontTextBox)
         this.MEM_text = new PIXI.Text("test", styleFontTextBox)
         this.WB_text = new PIXI.Text("test", styleFontTextBox)
+
+        this.faddEX_count = faddEX_count
+        this.fmultEX_count = fmultEX_count
+        this.fdivEX_count = fdivEX_count
+        this.faddEX_array = new Array<PIXI.Text>(this.faddEX_count)
+        for (let i = 0; i < this.faddEX_count; i++) {
+            this.faddEX_array[i] = new PIXI.Text("test", styleFontTextBox)
+        }
+        this.fmultEX_array = new Array<PIXI.Text>(this.fmultEX_count)
+        for (let i = 0; i < this.fmultEX_count; i++) {
+            this.fmultEX_array[i] = new PIXI.Text("test", styleFontTextBox)
+        }
+        this.fdivEX_array = new Array<PIXI.Text>(this.fdivEX_count)
+        for (let i = 0; i < this.fdivEX_count; i++) {
+            this.fdivEX_array[i] = new PIXI.Text("test", styleFontTextBox)
+        }
         this.initBoxs()
         this.initArrows()
         this.initTexts()
@@ -65,18 +84,45 @@ export class PixiTHUMER_Pipeline extends PIXI.Container {
         this.IntStages_text.position.y = 20
         this.addChild(this.IntStages_text)
 
+        this.drawText(this.IF_text, {
+            x: 100 + 5,
+            y: 100
+        })
+        this.drawText(this.ID_text, {
+            x: 100 + 5,
+            y: 200
+        })
+        this.drawText(this.intEX_text, {
+            x: 100 + 5,
+            y: 300
+        })
+        this.drawText(this.MEM_text, {
+            x: 100 + 5,
+            y: 400
+        })
+        this.drawText(this.WB_text, {
+            x: 100 + 5,
+            y: 500
+        })
 
-        this.drawText(this.IF_text, { x: 100 + 5, y: 100 })
-        this.drawText(this.ID_text, { x: 100 + 5, y: 200 })
-        this.drawText(this.intEX_text, { x: 100 + 5, y: 300 })
-        this.drawText(this.MEM_text, { x: 100 + 5, y: 400 })
-        this.drawText(this.WB_text, { x: 100 + 5, y: 500 })
-
-
-        this.drawText(this.faddEX_text, { x: 400 + 5, y: 100 })
-        this.drawText(this.fmultEX_text, { x: 650 + 5, y: 100 })
-        this.drawText(this.fdivEX_text, { x: 900 + 5, y: 100 })
-
+        for (let i = 0; i < this.faddEX_count; i++) {
+            this.drawText(this.faddEX_array[i], {
+                x: 400 + 5,
+                y: 100 + (i * 100)
+            })
+        }
+        for (let i = 0; i < this.fmultEX_count; i++) {
+            this.drawText(this.fmultEX_array[i], {
+                x: 650 + 5,
+                y: 100 + (i * 100)
+            })
+        }
+        for (let i = 0; i < this.fdivEX_count; i++) {
+            this.drawText(this.fdivEX_array[i], {
+                x: 900 + 5,
+                y: 100 + (i * 100)
+            })
+        }
     }
 
     private drawText(object: PIXI.Text, coords: CoordsType) {
@@ -88,46 +134,187 @@ export class PixiTHUMER_Pipeline extends PIXI.Container {
 
     private initArrows() {
         // IF
-        this.drawArrow({ x: 175, y: 50 }, { x: 175, y: 100 })
+        this.drawArrow({
+            x: 175,
+            y: 50
+        }, {
+            x: 175,
+            y: 100
+        })
         // ID
-        this.drawArrow({ x: 175, y: 125 }, { x: 175, y: 200 })
+        this.drawArrow({
+            x: 175,
+            y: 125
+        }, {
+            x: 175,
+            y: 200
+        })
         // intEX
-        this.drawArrow({ x: 175, y: 225 }, { x: 175, y: 300 })
+        this.drawArrow({
+            x: 175,
+            y: 225
+        }, {
+            x: 175,
+            y: 300
+        })
         // MEM
-        this.drawArrow({ x: 175, y: 325 }, { x: 175, y: 400 })
+        this.drawArrow({
+            x: 175,
+            y: 325
+        }, {
+            x: 175,
+            y: 400
+        })
         // WB
-        this.drawArrow({ x: 175, y: 425 }, { x: 175, y: 500 })
-        this.drawArrow({ x: 175, y: 525 }, { x: 175, y: 600 })
+        this.drawArrow({
+            x: 175,
+            y: 425
+        }, {
+            x: 175,
+            y: 500
+        })
+        this.drawArrow({
+            x: 175,
+            y: 525
+        }, {
+            x: 175,
+            y: 600
+        })
 
         // Lines
-        this.drawLine({ x: 175, y: 275 }, { x: 300, y: 275 })
-        this.drawLine({ x: 300, y: 275 }, { x: 300, y: 50 })
-        this.drawLine({ x: 300, y: 50 }, { x: 975, y: 50 })
+        this.drawLine({
+            x: 175,
+            y: 275
+        }, {
+            x: 300,
+            y: 275
+        })
+        this.drawLine({
+            x: 300,
+            y: 275
+        }, {
+            x: 300,
+            y: 50
+        })
+        this.drawLine({
+            x: 300,
+            y: 50
+        }, {
+            x: 975,
+            y: 50
+        })
 
-        // input faddEX, fmultEX, fdivEX 
-        this.drawArrow({ x: 400 + 75, y: 50 }, { x: 400 + 75, y: 100 })
-        this.drawArrow({ x: 650 + 75, y: 50 }, { x: 650 + 75, y: 100 })
-        this.drawArrow({ x: 900 + 75, y: 50 }, { x: 900 + 75, y: 100 })
+        // input faddEX, fmultEX, fdivEX
+        this.drawArrow({
+            x: 400 + 75,
+            y: 50
+        }, {
+            x: 400 + 75,
+            y: 100
+        })
+        this.drawArrow({
+            x: 650 + 75,
+            y: 50
+        }, {
+            x: 650 + 75,
+            y: 100
+        })
+        this.drawArrow({
+            x: 900 + 75,
+            y: 50
+        }, {
+            x: 900 + 75,
+            y: 100
+        })
 
-        // output faddEX, fmultEX, fdivEX 
-        this.drawArrow({ x: 400 + 75, y: 125 }, { x: 400 + 75, y: 375 })
-        this.drawArrow({ x: 650 + 75, y: 125 }, { x: 650 + 75, y: 375 })
-        this.drawArrow({ x: 900 + 75, y: 125 }, { x: 900 + 75, y: 375 })
+        // output faddEX, fmultEX, fdivEX
+        this.drawArrow({
+            x: 400 + 75,
+            y: 125
+        }, {
+            x: 400 + 75,
+            y: 900
+        })
+        this.drawArrow({
+            x: 650 + 75,
+            y: 125
+        }, {
+            x: 650 + 75,
+            y: 900
+        })
+        this.drawArrow({
+            x: 900 + 75,
+            y: 125
+        }, {
+            x: 900 + 75,
+            y: 900
+        })
 
         // faddEX, fmultEX, fdivEX to MEM
-        this.drawArrow({ x: 900 + 75, y: 375 }, { x: 175, y: 375 })
+        this.drawLine({
+            x: 975,
+            y: 900
+        }, {
+            x: 300,
+            y: 900
+        })
+        this.drawLine({
+            x: 300,
+            y: 900
+        }, {
+            x: 300,
+            y: 375
+        })
+
+        this.drawArrow({
+            x: 300,
+            y: 375
+        }, {
+            x: 175,
+            y: 375
+        })
     }
 
     private initBoxs() {
-        this.drawBox(0xFFFF00, { x: 100, y: 100 }, "IF")
-        this.drawBox(0XFFA200, { x: 100, y: 200 }, "ID")
-        this.drawBox(0XFF001C, { x: 100, y: 300 }, "intEX")
-        this.drawBox(0x00FF00, { x: 100, y: 400 }, "MEM")
-        this.drawBox(0XA2A2FF, { x: 100, y: 500 }, "WB")
+        this.drawBox(0xFFFF00, {
+            x: 100,
+            y: 100
+        }, "IF")
+        this.drawBox(0XFFA200, {
+            x: 100,
+            y: 200
+        }, "ID")
+        this.drawBox(0XFF001C, {
+            x: 100,
+            y: 300
+        }, "intEX")
+        this.drawBox(0x00FF00, {
+            x: 100,
+            y: 400
+        }, "MEM")
+        this.drawBox(0XA2A2FF, {
+            x: 100,
+            y: 500
+        }, "WB")
 
-        this.drawBox(0XFFC3FF, { x: 400, y: 100 }, "faddEX")
-        this.drawBox(0XC3FFC3, { x: 650, y: 100 }, "fmultEX")
-        this.drawBox(0XFFCB8E, { x: 900, y: 100 }, "fdivEX")
+        for (let i = 0; i < this.faddEX_count; i++) {
+            this.drawBox(0XFFC3FF, {
+                x: 400,
+                y: 100 + (i * 100)
+            }, "faddEX[" + i + "]")
+        }
+        for (let i = 0; i < this.fmultEX_count; i++) {
+            this.drawBox(0XC3FFC3, {
+                x: 650,
+                y: 100 + (i * 100)
+            }, "fmultEX[" + i + "]")
+        }
+        for (let i = 0; i < this.fdivEX_count; i++) {
+            this.drawBox(0XFFCB8E, {
+                x: 900,
+                y: 100 + (i * 100)
+            }, "fdivEX[" + i + "]")
+        }
     }
 
     private drawBox(color: ColorType, positionStart: CoordsType, text: string) {
@@ -140,7 +327,7 @@ export class PixiTHUMER_Pipeline extends PIXI.Container {
 
         const pixi_text = new PIXI.Text(text, styleFontTextPipe)
         pixi_text.position.x = (positionStart.x - (pixi_text.width + 10))
-        pixi_text.position.y = (positionStart.y + 5)
+        pixi_text.position.y = (positionStart.y)
         rectangle.addChild(pixi_text)
         this.addChild(rectangle)
     }
@@ -195,16 +382,19 @@ export class PixiTHUMER_Pipeline extends PIXI.Container {
         this.intEX_text.text = value
     }
 
-    public update_faddEX_text(value: string): void {
-        this.faddEX_text.text = value
+    public update_faddEX_text(count: number, value: string): void {
+        if (this.faddEX_count > count)
+            this.faddEX_array[count].text = value
     }
 
-    public update_fmultEX_text(value: string): void {
-        this.fmultEX_text.text = value
+    public update_fmultEX_text(count: number, value: string): void {
+        if (this.fmultEX_count > count)
+            this.fmultEX_array[count].text = value
     }
 
-    public update_fdivEX_text(value: string): void {
-        this.fdivEX_text.text = value
+    public update_fdivEX_text(count: number, value: string): void {
+        if (this.fdivEX_count > count)
+            this.fdivEX_array[count].text = value
     }
 
     public update_MEM_text(value: string): void {
@@ -220,15 +410,18 @@ export class PixiTHUMER_Pipeline extends PIXI.Container {
     }
 
     public toString(): string {
+        const faddEX_array = this.faddEX_array.map(v => v.text)
+        const fmultEX_array = this.fmultEX_array.map(v => v.text)
+        const fdivEX_array = this.fdivEX_array.map(v => v.text)
         return JSON.stringify({
-            "IF_text": this.IF_text.text,
-            "ID_text": this.ID_text.text,
-            "intEX_text": this.intEX_text.text,
-            "faddEX_text": this.faddEX_text.text,
-            "fmultEX_text": this.fmultEX_text.text,
-            "fdivEX_text": this.fdivEX_text.text,
-            "MEM_text": this.MEM_text.text,
-            "WB_text": this.WB_text.text,
+            "IF_text":       this.IF_text.text,
+            "ID_text":       this.ID_text.text,
+            "intEX_text":    this.intEX_text.text,
+            "MEM_text":      this.MEM_text.text,
+            "WB_text":       this.WB_text.text,
+            "faddEX_array":  faddEX_array,
+            "fmultEX_array": fmultEX_array,
+            "fdivEX_array":  fdivEX_array,
         })
     }
 }
