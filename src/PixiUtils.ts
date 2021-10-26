@@ -22,7 +22,7 @@ export namespace PixiUtils {
     return Math.sin(angle) * length;
   }
 
-  export function MapToArray(map: Map<any, any>): { key: any; value: any }[] {
+  export function MapToArray<K, V>(map: Map<K, V>): { key: K; value: V }[] {
     return Array.from(map, ([key, value]) => ({
       key,
       value

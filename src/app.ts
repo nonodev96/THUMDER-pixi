@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import Keyboard from 'pixi.js-keyboard';
 import Mouse from 'pixi.js-mouse';
 import { PixiTHUMER_Pipeline } from './PixiTHUMER_Pipeline';
+import { PixiTHUMER_CycleClockDiagram } from './PixiTHUMER_CycleClockDiagram';
 
 let state;
 
@@ -12,14 +13,14 @@ const SIZE = 1024;
 const app = new PIXI.Application({
   // width: document.documentElement.clientWidth,
   // height: document.documentElement.clientHeight,
-  width: SIZE * 2,
-  height: SIZE,
+  width:           SIZE * 2,
+  height:          SIZE,
   backgroundColor: 0xDDDDDD, // light blue
-  sharedTicker: true,
-  sharedLoader: true,
-  antialias: true,
-  autoDensity: true,
-  resolution: 2,
+  sharedTicker:    true,
+  sharedLoader:    true,
+  antialias:       true,
+  autoDensity:     true,
+  resolution:      2,
 });
 app.view.id = 'main';
 
@@ -29,15 +30,15 @@ PIXI.settings.SORTABLE_CHILDREN = true;
 const loader = PIXI.Loader.shared;
 const ticker = PIXI.Ticker.shared;
 
-const pipeline = new PixiTHUMER_Pipeline();
+// const pipeline = new PixiTHUMER_Pipeline();
 
-/*
+
 const cycleClockDiagram = new PixiTHUMER_CycleClockDiagram();
 
 app.view.addEventListener('resize', () => {
   app.renderer.resize(document.documentElement.clientWidth, document.documentElement.clientHeight);
-  cycleClockDiagram.borderTop.width = document.documentElement.clientWidth;
-  cycleClockDiagram.borderLeft.height = document.documentElement.clientHeight;
+  cycleClockDiagram.borderTopWidth = document.documentElement.clientWidth;
+  cycleClockDiagram.borderLeftHeight = document.documentElement.clientHeight;
 });
 
 app.view.addEventListener('contextmenu', (e) => {
@@ -49,16 +50,16 @@ const iter = 0;
 cycleClockDiagram.addInstruction('ADDI R28, R0, #4', {}, iter);
 cycleClockDiagram.addInstruction('ADDI R17, R0, 0', {}, iter);
 cycleClockDiagram.addInstruction('ADDI R18, R0, 0', {}, iter);
-cycleClockDiagram.addInstruction('ADDI R26, R0, #32', { IF_stall: 2 }, iter);
-cycleClockDiagram.addInstruction('ADDI R29, R0, #1', { ID_stall: 2 }, iter);
+cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {IF_stall: 1}, iter);
+cycleClockDiagram.addInstruction('ADDI R29, R0, #1', {IF_stall: 1}, iter);
 cycleClockDiagram.addArrow({
   start: {
     instruction: 1,
-    step: 1,
+    step:        1,
   },
-  to: {
+  to:    {
     instruction: 2,
-    step: 2,
+    step:        2,
   },
 });
 
@@ -66,14 +67,30 @@ const buttonAddInstruction = document.createElement('button');
 buttonAddInstruction.textContent = 'Add Instruction';
 buttonAddInstruction.addEventListener('click', () => {
   cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {
-    IF: 1,
+    IF:       1,
     IF_stall: 0,
-    ID: 1,
+    ID:       1,
     ID_stall: 0,
-    intEX: 2,
-    MEM: 1,
-    WB: 1,
+    intEX:    1,
+    MEM:      1,
+    WB:       1,
   });
+});
+
+const buttonAddInstructionX10 = document.createElement('button');
+buttonAddInstructionX10.textContent = 'Add Instruction (x10)';
+buttonAddInstructionX10.addEventListener('click', () => {
+  for (let i = 0; i < 10; i++) {
+    cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {
+      IF:       1,
+      IF_stall: 0,
+      ID:       1,
+      ID_stall: 0,
+      intEX:    1,
+      MEM:      1,
+      WB:       1,
+    })
+  }
 });
 
 const buttonNextStep = document.createElement('button');
@@ -100,10 +117,10 @@ const buttonDebug = document.createElement('button');
 buttonDebug.textContent = 'Debug';
 buttonDebug.addEventListener('click', () => {
   cycleClockDiagram.debug();
-  console.log(cycleClockDiagram.toString());
 });
 
 document.querySelectorAll('body')[0].appendChild(buttonAddInstruction);
+document.querySelectorAll('body')[0].appendChild(buttonAddInstructionX10);
 document.querySelectorAll('body')[0].appendChild(buttonNextStep);
 document.querySelectorAll('body')[0].appendChild(buttonNextStepX10);
 document.querySelectorAll('body')[0].appendChild(buttonReset);
@@ -111,20 +128,19 @@ document.querySelectorAll('body')[0].appendChild(buttonDebug);
 document.querySelectorAll('body')[0].appendChild(document.createElement('br'));
 
 
-
 const styleNoWrap = new PIXI.TextStyle({
-  fontFamily: 'Arial',
-  fontSize: 12,
-  fill: 'white',
-  stroke: '#000000',
-  strokeThickness: 4,
-  dropShadow: true,
-  dropShadowColor: '#000000',
-  dropShadowBlur: 4,
-  dropShadowAngle: Math.PI / 6,
+  fontFamily:         'Arial',
+  fontSize:           12,
+  fill:               'white',
+  stroke:             '#000000',
+  strokeThickness:    4,
+  dropShadow:         true,
+  dropShadowColor:    '#000000',
+  dropShadowBlur:     4,
+  dropShadowAngle:    Math.PI / 6,
   dropShadowDistance: 6,
 });
-*/
+
 document.body.appendChild(app.view);
 
 function play(delta) {
@@ -132,22 +148,19 @@ function play(delta) {
 
   // Keyboard
   if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
-    pipeline.update_ID_text("prueba\n$TEXT 0x10")
-    // cycleClockDiagram.moveRight();
-    pipeline.update_faddEX_text(7, 'pepe')
-    
+    cycleClockDiagram.moveRight();
+    // pipeline.update_ID_text("prueba\n$TEXT 0x10")
   }
   if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {
-    // cycleClockDiagram.moveLeft();
-    
+    cycleClockDiagram.moveLeft();
+
   }
   if (Keyboard.isKeyDown('ArrowUp', 'KeyW', 'KeyI')) {
-    // cycleClockDiagram.moveBottom();
-    
+    cycleClockDiagram.moveBottom();
+
   }
   if (Keyboard.isKeyDown('ArrowDown', 'KeyS', 'KeyK')) {
-    // cycleClockDiagram.moveTop();
-    
+    cycleClockDiagram.moveTop();
   }
 
   // const objectPixi = {
@@ -219,14 +232,15 @@ loader.load((loader, resources) => {
   // Graphics
   // app.stage.addChild(cycleClockDiagram.draw());
 
-  app.stage.addChild(pipeline.draw());
+  // app.stage.addChild(pipeline.draw());
+  app.stage.addChild(cycleClockDiagram.draw());
 
   // const cycleClockDiagram2 = new PixiJScycleClockDiagram(5, 10)
   // cycleClockDiagram2.table.position.x += 0
   // cycleClockDiagram2.table.position.y += 200
   // app.stage.addChild(cycleClockDiagram2.draw())
 
-  const fps = new PIXI.Text('FPS: 0', { fill: 0xffffff });
+  const fps = new PIXI.Text('FPS: 0', {fill: 0xffffff});
   fps.position.x = document.documentElement.clientWidth - 200;
   fps.position.y = 25;
 

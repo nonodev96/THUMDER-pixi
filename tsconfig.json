@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "lib": [ "ES2018", "dom" ],
+    "lib": [
+      "ES2018",
+      "dom"
+    ],
     "target": "ES2018",
     "sourceMap": true,
     "declaration": true,
@@ -15,6 +18,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
+  "lib": [
+    "dom",
+    "es2015"
+  ],
   "include": [
     "./src/**/*"
   ],
@@ -22,6 +29,6 @@
     "node_modules",
     "src/app.ts",
     "test",
-    "**/*.spec.ts",
+    "**/*.spec.ts"
   ]
 }

@@ -5,10 +5,10 @@ import { PixiUtils } from './PixiUtils';
 
 const styleFontTextInstruction = new PIXI.TextStyle({
   fontFamily: 'Arial',
-  fontSize: 15,
-  fill: 'white',
-  stroke: '#000000',
-  align: 'center',
+  fontSize:   15,
+  fill:       'white',
+  stroke:     '#000000',
+  align:      'center',
   // strokeThickness: 0,
   // dropShadow: true,
   // dropShadowColor: "#000000",
@@ -19,9 +19,9 @@ const styleFontTextInstruction = new PIXI.TextStyle({
 
 const styleFontTextSteps = new PIXI.TextStyle({
   fontFamily: 'Arial',
-  fontSize: 15,
-  fill: 'white',
-  stroke: '#000000',
+  fontSize:   15,
+  fill:       'white',
+  stroke:     '#000000',
   // strokeThickness: 0,
   // dropShadow: true,
   // dropShadowColor: "#000000",
@@ -30,20 +30,20 @@ const styleFontTextSteps = new PIXI.TextStyle({
   // dropShadowDistance: 6,
 });
 
-export const defaultCycle = {
-  IF: 1,
-  IF_stall: 0,
-  ID: 1,
-  ID_stall: 0,
-  intEX: 1,
+export const DEFAULT_CYCLE = {
+  IF:          1,
+  IF_stall:    0,
+  ID:          1,
+  ID_stall:    0,
+  intEX:       1,
   intEX_stall: 0,
-  MEM: 1,
-  MEM_stall: 0,
-  WB: 1,
-  WB_stall: 0,
+  MEM:         1,
+  MEM_stall:   0,
+  WB:          1,
+  WB_stall:    0,
 };
 
-export type ArrowDirection = {
+export type TypeArrowDirection = {
   start: {
     instruction: number,
     step: number
@@ -54,12 +54,12 @@ export type ArrowDirection = {
   }
 };
 
-export type CellPosition = {
-  instruction: number,
-  step: number
+export type TypeCellPosition = {
+  instructionPosition: number,
+  stepPosition: number
 }
 
-export type CycleType = {
+export type TypeCycleType = {
   IF?: number,
   IF_stall?: number,
   ID?: number,
@@ -72,56 +72,106 @@ export type CycleType = {
   WB_stall?: number
 };
 
+export type TypeRowInstruction = number;
+
+export type TypeData_Queue_PIXI_Graphics_ = {
+  startStep?: number
+  endStep?: number
+  queue: Queue<PIXI.Graphics>
+};
+
+class MyMap<K, V> {
+  private _map: Map<string, V>;
+
+  constructor() {
+    this._map = new Map();
+  }
+
+  set(key: K, data: V) {
+    const k = JSON.stringify(key)
+    this._map.set(k, data);
+  }
+
+  get(key: K) {
+    const k = JSON.stringify(key)
+    return this._map.get(k);
+  }
+
+  has(key: K): boolean {
+    const k = JSON.stringify(key)
+    return this._map.has(k)
+  }
+
+  delete(key: K): boolean {
+    const k = JSON.stringify(key)
+    return this._map.delete(k)
+  }
+}
+
 export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
-  table: PixiJSTable;
-
-  tableSteps: PixiJSTable;
-
-  tableInstructions: PixiJSTable;
-
-  arrows: PIXI.Graphics;
-
-  borderTitle: PIXI.Graphics;
-
-  borderLeft: PIXI.Graphics;
-
-  borderTop: PIXI.Graphics;
 
   realStep: number;
 
-  stepToStart: number;
+  instructions: number;
 
-  instruction: number;
+  private table: PixiJSTable;
 
-  // K => Row = instruction
-  timer: Map<number, Queue<PIXI.Graphics>>;
+  private tableSteps: PixiJSTable;
 
-  listArrows: LinkedList<ArrowDirection>;
+  private tableInstructions: PixiJSTable;
 
-  constructor() {
+  private arrows: PIXI.Graphics;
+
+  private borderTitle: PIXI.Graphics;
+
+  private borderLeft: PIXI.Graphics;
+
+  private borderTop: PIXI.Graphics;
+
+  private stepToStart: number;
+
+  private last: number;
+
+  // K => { Row = instruction, Column = step}
+  private timerVoid: MyMap<TypeCellPosition, PIXI.Graphics>;
+  private timer: MyMap<TypeCellPosition, PIXI.Graphics>;
+  private listArrows: LinkedList<TypeArrowDirection>;
+  private readonly preDrawArrow: boolean;
+
+  constructor(preDrawArrow = false) {
     super();
+    this.preDrawArrow = preDrawArrow;
     this.table = new PixiJSTable();
     this.tableSteps = new PixiJSTable();
     this.tableInstructions = new PixiJSTable();
     this.arrows = new PIXI.Graphics();
 
-    this.instruction = 0;
+    this.instructions = 0;
     this.realStep = 0;
     this.stepToStart = 0;
+    this.last = 0;
 
     this.borderTitle = new PIXI.Graphics();
     this.borderLeft = new PIXI.Graphics();
     this.borderTop = new PIXI.Graphics();
 
-    this.timer = new Map();
+    this.timerVoid = new MyMap();
+    this.timer = new MyMap();
     this.listArrows = new LinkedList();
 
     this.initTables();
     this.drawBorders();
   }
 
-  public reset() {
+  set borderTopWidth(width: number) {
+    this.borderTop.width = width
+  }
 
+  set borderLeftHeight(height: number) {
+    this.borderLeft.height = height
+  }
+
+  public reset() {
     for (let i = this.table.rowCount - 1; i >= 0; i--) {
       this.table.deleteRow(i);
     }
@@ -134,13 +184,20 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
       this.tableSteps.deleteCell(0, 0);
     }
 
-    this.instruction = 0;
+    this.instructions = 0;
     this.realStep = 0;
     this.stepToStart = 0;
+    this.last = 1;
 
-    this.timer = new Map();
+    this.timerVoid = new MyMap();
+    this.timer = new MyMap();
     this.listArrows = new LinkedList();
+
+    while (this.arrows.children[0]) {
+      this.arrows.removeChild(this.arrows.children[0]);
+    }
     this.arrows = new PIXI.Graphics();
+
   }
 
   private initTables() {
@@ -167,9 +224,9 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
 
     const text = new PIXI.Text('Cycle clock', {
       fontFamily: 'Arial',
-      fontSize: 30,
-      fill: 'white',
-      stroke: '#000000',
+      fontSize:   30,
+      fill:       'white',
+      stroke:     '#000000',
     });
     text.position.x = (this.borderTitle.width / 2) - (text.width / 2);
     text.position.y = (this.borderTitle.height / 2) - (text.height / 2);
@@ -190,38 +247,43 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
     this.borderTop.zIndex = 4;
   }
 
-  public addInstruction(text: string, pipe: CycleType = defaultCycle, stepsToWait = 0) {
+  public addInstruction(text: string, pipe: TypeCycleType = DEFAULT_CYCLE, stepsToWait = 0) {
     this.drawInstruction(text);
 
     for (let i = 0; i < this.stepToStart + stepsToWait; i++) {
       this.drawCycle('', 0xCCCCCC, 0xBBBBBB, {
-        instruction: this.instruction,
-        step: i,
+        instructionPosition: this.instructions,
+        stepPosition:        i,
       });
     }
 
-    for (let i = 0; i < (pipe.IF_stall ?? defaultCycle.IF_stall); i++) this.drawCycle('💣', 0xFFFF00);
-    for (let i = 0; i < (pipe.IF ?? defaultCycle.IF); i++) this.drawCycle('IF', 0xFFFF00);
-    this.stepToStart += (pipe.IF_stall ?? defaultCycle.IF_stall);
-    this.stepToStart += (pipe.IF ?? defaultCycle.IF);
+    this.stepToStart += (pipe.IF ?? DEFAULT_CYCLE.IF);
+    this.last = this.stepToStart - 2;
+    for (let i = 0; i < (pipe.IF_stall ?? DEFAULT_CYCLE.IF_stall); i++) this.drawCycle('💣', 0xFFFF00);
+    for (let i = 0; i < (pipe.IF ?? DEFAULT_CYCLE.IF); i++) this.drawCycle('IF', 0xFFFF00);
+    // this.stepToStart += (pipe.IF_stall ?? DEFAULT_CYCLE.IF_stall);
 
-    for (let i = 0; i < (pipe.ID_stall ?? defaultCycle.ID_stall); i++) this.drawCycle('💣', 0xFF9900);
-    for (let i = 0; i < (pipe.ID ?? defaultCycle.ID); i++) this.drawCycle('ID', 0xFF9900);
+    for (let i = 0; i < (pipe.ID_stall ?? DEFAULT_CYCLE.ID_stall); i++) this.drawCycle('💣', 0xFF9900);
+    for (let i = 0; i < (pipe.ID ?? DEFAULT_CYCLE.ID); i++) this.drawCycle('ID', 0xFF9900);
+    // this.stepToStart += (pipe.ID_stall ?? DEFAULT_CYCLE.ID_stall);
 
-    for (let i = 0; i < (pipe.intEX_stall ?? defaultCycle.intEX_stall); i++) this.drawCycle('💣', 0xFF0000);
-    for (let i = 0; i < (pipe.intEX ?? defaultCycle.intEX); i++) this.drawCycle('intEX', 0xFF0000);
+    for (let i = 0; i < (pipe.intEX_stall ?? DEFAULT_CYCLE.intEX_stall); i++) this.drawCycle('💣', 0xFF0000);
+    for (let i = 0; i < (pipe.intEX ?? DEFAULT_CYCLE.intEX); i++) this.drawCycle('intEX', 0xFF0000);
+    // this.stepToStart += (pipe.intEX_stall ?? DEFAULT_CYCLE.intEX_stall);
 
-    for (let i = 0; i < (pipe.MEM_stall ?? defaultCycle.MEM_stall); i++) this.drawCycle('💣', 0x00FF00);
-    for (let i = 0; i < (pipe.MEM ?? defaultCycle.MEM); i++) this.drawCycle('MEM', 0x00FF00);
+    for (let i = 0; i < (pipe.MEM_stall ?? DEFAULT_CYCLE.MEM_stall); i++) this.drawCycle('💣', 0x00FF00);
+    for (let i = 0; i < (pipe.MEM ?? DEFAULT_CYCLE.MEM); i++) this.drawCycle('MEM', 0x00FF00);
+    // this.stepToStart += (pipe.MEM_stall ?? DEFAULT_CYCLE.MEM_stall);
 
-    for (let i = 0; i < (pipe.WB_stall ?? defaultCycle.WB_stall); i++) this.drawCycle('💣', 0xFF00FF);
-    for (let i = 0; i < (pipe.WB ?? defaultCycle.WB); i++) this.drawCycle('WB', 0xFF00FF);
+    for (let i = 0; i < (pipe.WB_stall ?? DEFAULT_CYCLE.WB_stall); i++) this.drawCycle('💣', 0xFF00FF);
+    for (let i = 0; i < (pipe.WB ?? DEFAULT_CYCLE.WB); i++) this.drawCycle('WB', 0xFF00FF);
+    // this.stepToStart += (pipe.WB_stall ?? DEFAULT_CYCLE.WB_stall);
 
     this.table.addRow();
-    this.instruction++;
+    this.instructions++;
   }
 
-  public addArrow(instructionArrow: ArrowDirection) {
+  public addArrow(instructionArrow: TypeArrowDirection) {
     this.listArrows.insertFirst(instructionArrow);
   }
 
@@ -229,7 +291,7 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
    * https://didactalia.net/comunidad/materialeducativo/recurso/calculadoras-de-progresiones-aritmeticas/f0ee1413-0276-7915-8ec2-fe0b2b31f6fc
    * https://math.stackexchange.com/questions/1314006/drawing-an-arrow
    */
-  private drawArrow(arrowDirection: ArrowDirection, color = 0xFF0000) {
+  private drawArrow(arrowDirection: TypeArrowDirection, color = 0xFF0000) {
     const initDistance_x = 210 + 37.5;
     const initDistance_y = 90 + 12.5;
 
@@ -238,12 +300,12 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
 
     const to_x = initDistance_x + (arrowDirection.to.step * 87.5);
     const to_y = initDistance_y + (arrowDirection.to.instruction * 37.5);
-    const L1 = Math.sqrt((to_x - start_x) ** 2 + (to_y - start_y) ** 2);
+    const L = Math.sqrt((to_x - start_x) ** 2 + (to_y - start_y) ** 2);
     const angle = 35;
-    const x3 = to_x + (15 / L1) * ((start_x - to_x) * Math.abs(Math.cos(angle)) + (start_y - to_y) * Math.abs(Math.sin(angle)));
-    const y3 = to_y + (15 / L1) * ((start_y - to_y) * Math.abs(Math.cos(angle)) - (start_x - to_x) * Math.abs(Math.sin(angle)));
-    const x4 = to_x + (15 / L1) * ((start_x - to_x) * Math.abs(Math.cos(angle)) - (start_y - to_y) * Math.abs(Math.sin(angle)));
-    const y4 = to_y + (15 / L1) * ((start_y - to_y) * Math.abs(Math.cos(angle)) + (start_x - to_x) * Math.abs(Math.sin(angle)));
+    const x3 = to_x + (15 / L) * ((start_x - to_x) * Math.abs(Math.cos(angle)) + (start_y - to_y) * Math.abs(Math.sin(angle)));
+    const y3 = to_y + (15 / L) * ((start_y - to_y) * Math.abs(Math.cos(angle)) - (start_x - to_x) * Math.abs(Math.sin(angle)));
+    const x4 = to_x + (15 / L) * ((start_x - to_x) * Math.abs(Math.cos(angle)) - (start_y - to_y) * Math.abs(Math.sin(angle)));
+    const y4 = to_y + (15 / L) * ((start_y - to_y) * Math.abs(Math.cos(angle)) + (start_x - to_x) * Math.abs(Math.sin(angle)));
 
     const bezierArrow = new PIXI.Graphics();
     bezierArrow.lineStyle(3, color);
@@ -257,7 +319,7 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
     this.arrows.addChild(bezierArrow);
   }
 
-  private drawInstruction(text_value: string) {
+  private drawInstruction(textValue: string) {
     const rectangle = new PIXI.Graphics();
     rectangle.lineStyle(2.5, 0x0033FF, 1);
     rectangle.beginFill(0x66CCFF);
@@ -265,7 +327,7 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
     rectangle.endFill();
     rectangle.zIndex = 11;
 
-    const text = new PIXI.Text(text_value, styleFontTextInstruction);
+    const text = new PIXI.Text(textValue, styleFontTextInstruction);
     text.position.x += (rectangle.width / 2) - (text.width / 2);
     text.position.y += ((rectangle.height - text.height) / 2) - 2.5;
     rectangle.addChild(text);
@@ -287,7 +349,7 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
     this.tableSteps.addCell(rectangle);
   }
 
-  private drawCycle(code: '' | '💣' | 'ID' | 'IF' | 'intEX' | 'MEM' | 'WB' | 'TEST' | null = null, colorLineStyle = 0xCCCCCC, colorFill = 0xBBBBBB, cellAt: CellPosition | null = null) {
+  private drawCycle(code: '' | '💣' | 'ID' | 'IF' | 'intEX' | 'MEM' | 'WB' | 'TEST' | null = null, colorLineStyle = 0xCCCCCC, colorFill = 0xBBBBBB, cellAt: TypeCellPosition | null = null) {
     const rectangle = new PIXI.Graphics();
     rectangle.lineStyle(2.5, colorLineStyle, 1);
     rectangle.beginFill(colorFill);
@@ -307,56 +369,75 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
     // } else {
     //   this.table.addCell(rectangle);
     // }
-
-    let i = this.instruction;
-    if (cellAt !== null) {
-      i = cellAt.instruction;
+    let key = cellAt;
+    if (key === null) {
+      this.last++;
+      key = {
+        instructionPosition: this.instructions,
+        stepPosition:        this.last
+      }
     }
-    const queue = this.timer.get(i) ?? new Queue<PIXI.Graphics>();
-    queue.enqueue(rectangle);
-    this.timer.set(i, queue);
+    if (code === '') {
+      if (!this.timerVoid.has(key)) {
+        this.timerVoid.set(key, rectangle);
+      }
+    } else {
+      if (!this.timer.has(key)) {
+        this.timer.set(key, rectangle);
+      }
+    }
   }
 
   public nextStep(): void {
-    const result = PixiUtils.MapToArray(this.timer);
-
-    for (const time of result) {
-      const instruction = time.key;
-      const v = time.value;
-      const rec = v.dequeue();
-      if (rec !== null) {
-        this.table.addCell(rec, instruction);
+    this.drawSteps();
+    this.realStep++;
+    for (let instructionPosition = 0; instructionPosition < this.instructions; instructionPosition++) {
+      for (let stepPosition = 0; stepPosition < this.realStep; stepPosition++) {
+        const key = {
+          instructionPosition: instructionPosition,
+          stepPosition:        stepPosition
+        };
+        if (this.timerVoid.has(key) && !this.table.exist(instructionPosition, stepPosition)) {
+          const graphicsVoid = this.timerVoid.get(key);
+          this.table.addCell(graphicsVoid, instructionPosition);
+        }
+        if (this.timer.has(key) && !this.table.exist(instructionPosition, stepPosition)) {
+          const graphics = this.timer.get(key);
+          this.table.addCell(graphics, instructionPosition);
+        }
       }
     }
-    const listArrows = this.listArrows.toArray()
-      .filter((value) => this.realStep === value.to.step);
-
+    let listArrows;
+    if (this.preDrawArrow) {
+      listArrows = this.listArrows.toArray().filter((value) => this.realStep === value.to.step);
+    } else {
+      listArrows = this.listArrows.toArray().filter((value) => this.realStep - 1 === value.to.step);
+    }
     for (const arrow of listArrows) {
       this.drawArrow(arrow);
     }
-
-    this.drawSteps();
-    this.realStep++;
+    // TODO
+    // si esta al final de la caja de visualización desplazar a la derecha
   }
 
   public draw(): PIXI.Container {
     this.addChild(this.table.draw());
     this.addChild(this.tableSteps.draw());
     this.addChild(this.tableInstructions.draw());
-
     this.addChild(this.borderTop);
     this.addChild(this.borderLeft);
     this.addChild(this.borderTitle);
-
     this.addChild(this.arrows);
-
     return this;
   }
 
   public moveLeft() {
-    this.table.position.x -= 10;
-    this.tableSteps.position.x -= 10;
-    this.arrows.position.x -= 10;
+    const max = this.tableSteps.width + this.tableSteps.x;
+    if (max > 280) {
+      this.table.position.x -= 10;
+      this.tableSteps.position.x -= 10;
+      this.arrows.position.x -= 10;
+    }
   }
 
   public moveRight() {
@@ -368,9 +449,12 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
   }
 
   public moveTop() {
-    this.table.position.y -= 10;
-    this.tableInstructions.y -= 10;
-    this.arrows.position.y -= 10;
+    const max = this.tableInstructions.height + this.tableInstructions.y;
+    if (max > 120) {
+      this.table.position.y -= 10;
+      this.tableInstructions.y -= 10;
+      this.arrows.position.y -= 10;
+    }
   }
 
   public moveBottom() {
@@ -399,8 +483,8 @@ export class PixiTHUMER_CycleClockDiagram extends PIXI.Container {
 
   toString(): string {
     return JSON.stringify({
-      step: this.stepToStart,
-      timer: this.timer,
+      stepToStart: this.stepToStart,
+      realStep:    this.realStep
     });
   }
 }
