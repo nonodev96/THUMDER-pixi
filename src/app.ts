@@ -1,26 +1,28 @@
 import * as PIXI from 'pixi.js';
 import Keyboard from 'pixi.js-keyboard';
 import Mouse from 'pixi.js-mouse';
-import { PixiTHUMER_Pipeline } from './PixiTHUMER_Pipeline';
-import { PixiTHUMER_CycleClockDiagram } from './PixiTHUMER_CycleClockDiagram';
+import { PixiTHUMDER_Pipeline } from './PixiTHUMDER_Pipeline';
+import { PixiTHUMDER_CycleClockDiagram } from './PixiTHUMDER_CycleClockDiagram';
+import { PixiTHUMDER_Table } from './PixiTHUMDER_Table';
+import { PixiUtils } from './PixiUtils';
 
 let state;
 
 // constants
-const SIZE = 1024;
+const SIZE = 720;
 
 // create and append app
 const app = new PIXI.Application({
   // width: document.documentElement.clientWidth,
   // height: document.documentElement.clientHeight,
-  width:           SIZE * 2,
-  height:          SIZE,
+  width          : SIZE * 2,
+  height         : SIZE,
   backgroundColor: 0xDDDDDD, // light blue
-  sharedTicker:    true,
-  sharedLoader:    true,
-  antialias:       true,
-  autoDensity:     true,
-  resolution:      2,
+  sharedTicker   : true,
+  sharedLoader   : true,
+  antialias      : true,
+  autoDensity    : true,
+  resolution     : 2,
 });
 app.view.id = 'main';
 
@@ -30,10 +32,27 @@ PIXI.settings.SORTABLE_CHILDREN = true;
 const loader = PIXI.Loader.shared;
 const ticker = PIXI.Ticker.shared;
 
-// const pipeline = new PixiTHUMER_Pipeline();
+const pipeline = new PixiTHUMDER_Pipeline();
+const cycleClockDiagram = new PixiTHUMDER_CycleClockDiagram();
+const table = new PixiTHUMDER_Table();
 
+for (const row of [0, 1, 2]) {
+  for (const col of [0]) {
+    const rectangle = new PIXI.Graphics();
+    rectangle.lineStyle(2.5, 0x0033FF, 1);
+    rectangle.beginFill(0x66CCFF);
+    rectangle.drawRect(0, 0, 175, 25);
+    rectangle.endFill();
+    rectangle.zIndex = 11;
+    const text = new PIXI.Text('Test', { fontSize: 18 });
+    text.position.x += (rectangle.width / 2) - (text.width / 2);
+    text.position.y += ((rectangle.height - text.height) / 2) - 2.5;
+    rectangle.addChild(text);
 
-const cycleClockDiagram = new PixiTHUMER_CycleClockDiagram();
+    table.setCell(row, col, rectangle);
+  }
+}
+
 
 app.view.addEventListener('resize', () => {
   app.renderer.resize(document.documentElement.clientWidth, document.documentElement.clientHeight);
@@ -50,30 +69,21 @@ const iter = 0;
 cycleClockDiagram.addInstruction('ADDI R28, R0, #4', {}, iter);
 cycleClockDiagram.addInstruction('ADDI R17, R0, 0', {}, iter);
 cycleClockDiagram.addInstruction('ADDI R18, R0, 0', {}, iter);
-cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {IF_stall: 1}, iter);
-cycleClockDiagram.addInstruction('ADDI R29, R0, #1', {IF_stall: 1}, iter);
-cycleClockDiagram.addArrow({
-  start: {
-    instruction: 1,
-    step:        1,
-  },
-  to:    {
-    instruction: 2,
-    step:        2,
-  },
-});
+cycleClockDiagram.addInstruction('ADDI R26, R0, #32', { IF_stall: 1 }, iter);
+cycleClockDiagram.addInstruction('ADDI R29, R0, #1', { IF_stall: 1 }, iter);
+cycleClockDiagram.addArrow({ start: { instruction: 1, step: 1 }, to: { instruction: 5, step: 5 } });
 
 const buttonAddInstruction = document.createElement('button');
 buttonAddInstruction.textContent = 'Add Instruction';
 buttonAddInstruction.addEventListener('click', () => {
   cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {
-    IF:       1,
+    IF      : 1,
     IF_stall: 0,
-    ID:       1,
+    ID      : 1,
     ID_stall: 0,
-    intEX:    1,
-    MEM:      1,
-    WB:       1,
+    intEX   : 1,
+    MEM     : 1,
+    WB      : 1,
   });
 });
 
@@ -82,14 +92,14 @@ buttonAddInstructionX10.textContent = 'Add Instruction (x10)';
 buttonAddInstructionX10.addEventListener('click', () => {
   for (let i = 0; i < 10; i++) {
     cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {
-      IF:       1,
+      IF      : 1,
       IF_stall: 0,
-      ID:       1,
+      ID      : 1,
       ID_stall: 0,
-      intEX:    1,
-      MEM:      1,
-      WB:       1,
-    })
+      intEX   : 1,
+      MEM     : 1,
+      WB      : 1,
+    });
   }
 });
 
@@ -110,7 +120,7 @@ buttonNextStepX10.addEventListener('click', () => {
 const buttonReset = document.createElement('button');
 buttonReset.textContent = 'Reset';
 buttonReset.addEventListener('click', () => {
-  cycleClockDiagram.reset();
+//  cycleClockDiagram.reset();
 });
 
 const buttonDebug = document.createElement('button');
@@ -129,15 +139,15 @@ document.querySelectorAll('body')[0].appendChild(document.createElement('br'));
 
 
 const styleNoWrap = new PIXI.TextStyle({
-  fontFamily:         'Arial',
-  fontSize:           12,
-  fill:               'white',
-  stroke:             '#000000',
-  strokeThickness:    4,
-  dropShadow:         true,
-  dropShadowColor:    '#000000',
-  dropShadowBlur:     4,
-  dropShadowAngle:    Math.PI / 6,
+  fontFamily        : 'Arial',
+  fontSize          : 12,
+  fill              : 'white',
+  stroke            : '#000000',
+  strokeThickness   : 4,
+  dropShadow        : true,
+  dropShadowColor   : '#000000',
+  dropShadowBlur    : 4,
+  dropShadowAngle   : Math.PI / 6,
   dropShadowDistance: 6,
 });
 
@@ -149,7 +159,6 @@ function play(delta) {
   // Keyboard
   if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
     cycleClockDiagram.moveRight();
-    // pipeline.update_ID_text("prueba\n$TEXT 0x10")
   }
   if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {
     cycleClockDiagram.moveLeft();
@@ -230,17 +239,16 @@ loader.load((loader, resources) => {
   // app.stage.addChild(grid.drawGrid())
 
   // Graphics
-  // app.stage.addChild(cycleClockDiagram.draw());
-
-  // app.stage.addChild(pipeline.draw());
+  //app.stage.addChild(pipeline.draw());
   app.stage.addChild(cycleClockDiagram.draw());
+  // app.stage.addChild(table.draw());
 
   // const cycleClockDiagram2 = new PixiJScycleClockDiagram(5, 10)
   // cycleClockDiagram2.table.position.x += 0
   // cycleClockDiagram2.table.position.y += 200
   // app.stage.addChild(cycleClockDiagram2.draw())
 
-  const fps = new PIXI.Text('FPS: 0', {fill: 0xffffff});
+  const fps = new PIXI.Text('FPS: 0', { fill: 0xffffff });
   fps.position.x = document.documentElement.clientWidth - 200;
   fps.position.y = 25;
 

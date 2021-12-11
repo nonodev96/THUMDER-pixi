@@ -20,7 +20,7 @@ app.view.id = 'main';
 ## Cycle Clock Diagram Methods
 
 ```ts
-const cycleClockDiagram = new PixiTHUMER_CycleClockDiagram();
+const cycleClockDiagram = new PixiTHUMDER_CycleClockDiagram();
 
 
 cycleClockDiagram.addInstruction('ADDI R28, R0, #4', {});
