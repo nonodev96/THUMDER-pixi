@@ -9,9 +9,9 @@ export type CoordsType = {
 
 const styleFontTextPipe = new PIXI.TextStyle({
   fontFamily: 'Arial',
-  fontSize  : 18,
-  fill      : 'black',
-  stroke    : '#000000',
+  fontSize:   18,
+  fill:       'black',
+  stroke:     '#000000',
   // strokeThickness: 0,
   // dropShadow: true,
   // dropShadowColor: "#000000",
@@ -22,9 +22,9 @@ const styleFontTextPipe = new PIXI.TextStyle({
 
 const styleFontTextBox = new PIXI.TextStyle({
   fontFamily: 'Arial',
-  fontSize  : 18,
-  fill      : 'black',
-  stroke    : '#000000',
+  fontSize:   18,
+  fill:       'black',
+  stroke:     '#000000',
   // strokeThickness: 0,
   // dropShadow: true,
   // dropShadowColor: "#000000",
@@ -257,14 +257,14 @@ export class PixiTHUMDER_Pipeline extends PIXI.Container {
     const fmultEX_array = this.fmultEX_array.map((v) => v.text);
     const fdivEX_array = this.fdivEX_array.map((v) => v.text);
     return JSON.stringify({
-      IF_text      : this.IF_text.text,
-      ID_text      : this.ID_text.text,
-      intEX_text   : this.intEX_text.text,
-      MEM_text     : this.MEM_text.text,
-      WB_text      : this.WB_text.text,
-      faddEX_array : faddEX_array,
+      IF_text:       this.IF_text.text,
+      ID_text:       this.ID_text.text,
+      intEX_text:    this.intEX_text.text,
+      MEM_text:      this.MEM_text.text,
+      WB_text:       this.WB_text.text,
+      faddEX_array:  faddEX_array,
       fmultEX_array: fmultEX_array,
-      fdivEX_array : fdivEX_array,
+      fdivEX_array:  fdivEX_array,
     });
   }
 }

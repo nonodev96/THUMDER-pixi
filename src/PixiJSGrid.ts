@@ -5,11 +5,11 @@ import { Graphics, InteractionData } from 'pixi.js';
  * @author: Luis Angel Garcia
  */
 const DEFAULT_LINE_STYLE = {
-  width: 1,
-  color: 0xffffff,
-  alpha: 1,
+  width:     1,
+  color:     0xffffff,
+  alpha:     1,
   alignment: 0.5,
-  native: true,
+  native:    true,
 };
 
 type paramLineConfig = {

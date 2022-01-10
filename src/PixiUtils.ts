@@ -66,4 +66,32 @@ export namespace PixiUtils {
     bezierArrow.lineTo(to_x, to_y);
     return bezierArrow;
   }
+
+  export class THUMDER_Map<K, V> {
+    private _map: Map<string, V>;
+
+    constructor() {
+      this._map = new Map();
+    }
+
+    set(key: K, data: V) {
+      const k = JSON.stringify(key);
+      this._map.set(k, data);
+    }
+
+    get(key: K) {
+      const k = JSON.stringify(key);
+      return this._map.get(k);
+    }
+
+    has(key: K): boolean {
+      const k = JSON.stringify(key);
+      return this._map.has(k);
+    }
+
+    delete(key: K): boolean {
+      const k = JSON.stringify(key);
+      return this._map.delete(k);
+    }
+  }
 }

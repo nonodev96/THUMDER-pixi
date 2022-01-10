@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from "pixi.js";
 
 export class Position {
   public row;
@@ -12,7 +12,7 @@ export class Position {
   toString() {
     return JSON.stringify({
       row: this.row,
-      col: this.col,
+      col: this.col
     });
   }
 }
@@ -25,10 +25,10 @@ export type PIXITableConfiguration = {
 }
 
 export const DEFAULT_PIXI_TABLE_CONFIGURATION: PIXITableConfiguration = {
-  cellMaxHeight   : 10,
-  cellMaxWidth    : 10,
+  cellMaxHeight:    10,
+  cellMaxWidth:     10,
   columnSeparation: 10,
-  rowSeparation   : 10,
+  rowSeparation:    10
 };
 
 export class PixiTHUMDER_Table extends PIXI.Container {
@@ -67,30 +67,34 @@ export class PixiTHUMDER_Table extends PIXI.Container {
   }
 
   public deleteRow(row: number): void {
-    const rowToDelete = Array.from(this.table.keys()).filter((value => {
-      return (JSON.parse(value) as Position).row === row;
-    }));
+    const rowToDelete = Array.from(this.table.keys()).map((v) => JSON.parse(v) as Position).filter((position) => {
+      return (position).row === row;
+    });
     for (const position of rowToDelete) {
-      this.table.delete(position);
+      this.deleteCell(position.row, position.col);
     }
   }
 
   public deleteCol(col: number): void {
-    const colToDelete = Array.from(this.table.keys()).filter((value => {
-      return (JSON.parse(value) as Position).col === col;
-    }));
+    const colToDelete = Array.from(this.table.keys()).map((v) => JSON.parse(v) as Position).filter((position) => {
+      return (position).col === col;
+    });
     for (const position of colToDelete) {
-      this.table.delete(position);
+      this.deleteCell(position.row, position.col);
     }
   }
 
   public deleteCell(row: number, col: number): boolean {
-    const key = new Position(col, row);
+    const key = new Position(row, col);
+    if (this.existCell(row, col)) {
+      const cell = this.getCell(row, col);
+      this.removeChild(cell);
+    }
     return this.table.delete(key.toString());
   }
 
   public clearCell(row: number, col: number): void {
-    const key = new Position(col, row);
+    const key = new Position(row, col);
     this.table.set(key.toString(), new PIXI.Container());
   }
 
@@ -115,7 +119,7 @@ export class PixiTHUMDER_Table extends PIXI.Container {
   }
 
   public draw(): PIXI.Container {
-    if (this.isDebug) console.warn('Keys: ', Array.from(this.table.keys()));
+    if (this.isDebug) console.warn("Keys: ", Array.from(this.table.keys()));
     const positions: Position[] = Array.from(this.table.keys()).map((v) => {
       return (JSON.parse(v) as Position);
     });
@@ -129,7 +133,7 @@ export class PixiTHUMDER_Table extends PIXI.Container {
 
   public debug() {
     return {
-      table: this.table,
+      table: this.table
     };
   }
 

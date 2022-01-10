@@ -1,10 +1,10 @@
-import * as PIXI from 'pixi.js';
-import Keyboard from 'pixi.js-keyboard';
-import Mouse from 'pixi.js-mouse';
-import { PixiTHUMDER_Pipeline } from './PixiTHUMDER_Pipeline';
-import { PixiTHUMDER_CycleClockDiagram } from './PixiTHUMDER_CycleClockDiagram';
-import { PixiTHUMDER_Table } from './PixiTHUMDER_Table';
-import { PixiUtils } from './PixiUtils';
+import * as PIXI from "pixi.js";
+import Keyboard from "pixi.js-keyboard";
+import Mouse from "pixi.js-mouse";
+import { PixiTHUMDER_Pipeline } from "./PixiTHUMDER_Pipeline";
+import { PixiTHUMDER_CycleClockDiagram } from "./PixiTHUMDER_CycleClockDiagram";
+import { PixiTHUMDER_Table } from "./PixiTHUMDER_Table";
+import { PixiUtils } from "./PixiUtils";
 
 let state;
 
@@ -15,16 +15,16 @@ const SIZE = 720;
 const app = new PIXI.Application({
   // width: document.documentElement.clientWidth,
   // height: document.documentElement.clientHeight,
-  width          : SIZE * 2,
-  height         : SIZE,
+  width:           SIZE * 2,
+  height:          SIZE,
   backgroundColor: 0xDDDDDD, // light blue
-  sharedTicker   : true,
-  sharedLoader   : true,
-  antialias      : true,
-  autoDensity    : true,
-  resolution     : 2,
+  sharedTicker:    true,
+  sharedLoader:    true,
+  antialias:       true,
+  autoDensity:     true,
+  resolution:      2
 });
-app.view.id = 'main';
+app.view.id = "main";
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 PIXI.settings.SORTABLE_CHILDREN = true;
@@ -44,7 +44,7 @@ for (const row of [0, 1, 2]) {
     rectangle.drawRect(0, 0, 175, 25);
     rectangle.endFill();
     rectangle.zIndex = 11;
-    const text = new PIXI.Text('Test', { fontSize: 18 });
+    const text = new PIXI.Text(`Test ${row}-${col}`, { fontSize: 18 });
     text.position.x += (rectangle.width / 2) - (text.width / 2);
     text.position.y += ((rectangle.height - text.height) / 2) - 2.5;
     rectangle.addChild(text);
@@ -53,102 +53,165 @@ for (const row of [0, 1, 2]) {
   }
 }
 
-
-app.view.addEventListener('resize', () => {
+app.view.addEventListener("resize", () => {
   app.renderer.resize(document.documentElement.clientWidth, document.documentElement.clientHeight);
   cycleClockDiagram.borderTopWidth = document.documentElement.clientWidth;
   cycleClockDiagram.borderLeftHeight = document.documentElement.clientHeight;
 });
 
-app.view.addEventListener('contextmenu', (e) => {
+app.view.addEventListener("contextmenu", (e) => {
   // window.wasRightClick = true;
   // e.preventDefault();
 });
 
-const iter = 0;
-cycleClockDiagram.addInstruction('ADDI R28, R0, #4', {}, iter);
-cycleClockDiagram.addInstruction('ADDI R17, R0, 0', {}, iter);
-cycleClockDiagram.addInstruction('ADDI R18, R0, 0', {}, iter);
-cycleClockDiagram.addInstruction('ADDI R26, R0, #32', { IF_stall: 1 }, iter);
-cycleClockDiagram.addInstruction('ADDI R29, R0, #1', { IF_stall: 1 }, iter);
-cycleClockDiagram.addArrow({ start: { instruction: 1, step: 1 }, to: { instruction: 5, step: 5 } });
+cycleClockDiagram.addInstruction("ADDI R1, R0, 0x0");
+cycleClockDiagram.addInstruction("ADDI R1, R0, 0x2");
+cycleClockDiagram.addInstruction("ADDI R16, R0, 0x10");
+cycleClockDiagram.addInstruction("ADDI R18, R0, 0x8");
+cycleClockDiagram.addInstruction("ADDI R3, R0, 0x0");
+cycleClockDiagram.addInstruction("SEQ R4, R1, R3");
+cycleClockDiagram.addInstruction("BENZ R4, IsPrim");
+cycleClockDiagram.addInstruction("LW R5, Table(R3)");
 
-const buttonAddInstruction = document.createElement('button');
-buttonAddInstruction.textContent = 'Add Instruction';
-buttonAddInstruction.addEventListener('click', () => {
-  cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {
-    IF      : 1,
-    IF_stall: 0,
-    ID      : 1,
-    ID_stall: 0,
-    intEX   : 1,
-    MEM     : 1,
-    WB      : 1,
-  });
+cycleClockDiagram.nextStep({
+  IF:      { address: "0", addressRow: 0, draw: true },
+  ID:      { address: "", addressRow: 0, draw: false },
+  intEX:   { address: "", addressRow: 0, draw: false },
+  MEM:     { address: "", addressRow: 0, draw: false },
+  WB:      { address: "", addressRow: 0, draw: false },
+  faddEX:  [],
+  fmultEX: [],
+  fdivEX:  [],
+  arrows:  []
+}, 0);
+cycleClockDiagram.nextStep({
+  IF:      { address: "1", addressRow: 1, draw: true },
+  ID:      { address: "0", addressRow: 0, draw: true },
+  intEX:   { address: "", addressRow: 0, draw: false },
+  MEM:     { address: "", addressRow: 0, draw: false },
+  WB:      { address: "", addressRow: 0, draw: false },
+  faddEX:  [],
+  fmultEX: [],
+  fdivEX:  [],
+  arrows:  []
+}, 1);
+cycleClockDiagram.nextStep({
+  IF:      { address: "2", addressRow: 2, draw: true },
+  ID:      { address: "1", addressRow: 1, draw: true },
+  intEX:   { address: "0", addressRow: 0, draw: true },
+  MEM:     { address: "", addressRow: 0, draw: false },
+  WB:      { address: "", addressRow: 0, draw: false },
+  faddEX:  [],
+  fmultEX: [],
+  fdivEX:  [],
+  arrows:  []
+}, 2);
+cycleClockDiagram.nextStep({
+  IF:      { address: "3", addressRow: 3, draw: "R-Stall" },
+  ID:      { address: "2", addressRow: 2, draw: true },
+  intEX:   { address: "1", addressRow: 1, draw: true },
+  MEM:     { address: "0", addressRow: 0, draw: true },
+  WB:      { address: "", addressRow: 0, draw: false },
+  faddEX:  [],
+  fmultEX: [],
+  fdivEX:  [],
+  arrows:  []
+}, 3);
+
+
+let iter = 100;
+const buttonAddInstruction = document.createElement("button");
+buttonAddInstruction.textContent = "Add Instruction";
+buttonAddInstruction.addEventListener("click", () => {
+  cycleClockDiagram.addInstruction("Instruction #" + iter.toString(16).padStart(2, "0"));
+  iter += 4;
 });
 
-const buttonAddInstructionX10 = document.createElement('button');
-buttonAddInstructionX10.textContent = 'Add Instruction (x10)';
-buttonAddInstructionX10.addEventListener('click', () => {
+const buttonAddInstructionX10 = document.createElement("button");
+buttonAddInstructionX10.textContent = "Add Instruction (x10)";
+buttonAddInstructionX10.addEventListener("click", () => {
   for (let i = 0; i < 10; i++) {
-    cycleClockDiagram.addInstruction('ADDI R26, R0, #32', {
-      IF      : 1,
-      IF_stall: 0,
-      ID      : 1,
-      ID_stall: 0,
-      intEX   : 1,
-      MEM     : 1,
-      WB      : 1,
+    cycleClockDiagram.addInstruction("ADDI R26, R0, #32");
+  }
+});
+
+let step = 0;
+const buttonNextStep = document.createElement("button");
+buttonNextStep.textContent = "Next step";
+buttonNextStep.addEventListener("click", () => {
+  cycleClockDiagram.nextStep({
+    IF:      { address: "1", addressRow: step, draw: true },
+    ID:      { address: "", addressRow: step, draw: true },
+    intEX:   { address: "", addressRow: step, draw: true },
+    MEM:     { address: "", addressRow: step, draw: true },
+    WB:      { address: "", addressRow: step, draw: true },
+    faddEX:  [],
+    fmultEX: [],
+    fdivEX:  [],
+    arrows:  []
+  }, step);
+  step++;
+});
+
+const buttonNextStepX10 = document.createElement("button");
+buttonNextStepX10.textContent = "Next step (x10)";
+buttonNextStepX10.addEventListener("click", () => {
+  for (let i = 0; i < 10; i++) {
+    cycleClockDiagram.nextStep({
+      IF:      { address: "1", addressRow: 1, draw: true },
+      ID:      { address: "1", addressRow: 2, draw: true },
+      intEX:   { address: "1", addressRow: 3, draw: true },
+      MEM:     { address: "1", addressRow: 4, draw: true },
+      WB:      { address: "1", addressRow: 5, draw: true },
+      faddEX:  [],
+      fmultEX: [],
+      fdivEX:  [],
+      arrows:  []
     });
   }
 });
 
-const buttonNextStep = document.createElement('button');
-buttonNextStep.textContent = 'Next step';
-buttonNextStep.addEventListener('click', () => {
-  cycleClockDiagram.nextStep();
+const buttonReset = document.createElement("button");
+buttonReset.textContent = "Reset";
+buttonReset.addEventListener("click", () => {
+  cycleClockDiagram.reset();
 });
 
-const buttonNextStepX10 = document.createElement('button');
-buttonNextStepX10.textContent = 'Next step (x10)';
-buttonNextStepX10.addEventListener('click', () => {
-  for (let i = 0; i < 10; i++) {
-    cycleClockDiagram.nextStep();
-  }
-});
+const buttonDebug = document.createElement("button");
+buttonDebug.textContent = "Debug";
+buttonDebug.addEventListener("click", () => {
+  cycleClockDiagram.addArrow({ start: { instruction: 1, step: 2 }, to: { instruction: 2, step: 3 } });
 
-const buttonReset = document.createElement('button');
-buttonReset.textContent = 'Reset';
-buttonReset.addEventListener('click', () => {
-//  cycleClockDiagram.reset();
-});
-
-const buttonDebug = document.createElement('button');
-buttonDebug.textContent = 'Debug';
-buttonDebug.addEventListener('click', () => {
   cycleClockDiagram.debug();
 });
 
-document.querySelectorAll('body')[0].appendChild(buttonAddInstruction);
-document.querySelectorAll('body')[0].appendChild(buttonAddInstructionX10);
-document.querySelectorAll('body')[0].appendChild(buttonNextStep);
-document.querySelectorAll('body')[0].appendChild(buttonNextStepX10);
-document.querySelectorAll('body')[0].appendChild(buttonReset);
-document.querySelectorAll('body')[0].appendChild(buttonDebug);
-document.querySelectorAll('body')[0].appendChild(document.createElement('br'));
+const buttonDelete = document.createElement("button");
+buttonDelete.textContent = "Delete";
+buttonDelete.addEventListener("click", () => {
+  table.deleteCol(1);
+});
+
+document.querySelectorAll("body")[0].appendChild(buttonAddInstruction);
+document.querySelectorAll("body")[0].appendChild(buttonAddInstructionX10);
+document.querySelectorAll("body")[0].appendChild(buttonNextStep);
+document.querySelectorAll("body")[0].appendChild(buttonNextStepX10);
+document.querySelectorAll("body")[0].appendChild(buttonReset);
+document.querySelectorAll("body")[0].appendChild(buttonDebug);
+document.querySelectorAll("body")[0].appendChild(buttonDelete);
+document.querySelectorAll("body")[0].appendChild(document.createElement("br"));
 
 
 const styleNoWrap = new PIXI.TextStyle({
-  fontFamily        : 'Arial',
-  fontSize          : 12,
-  fill              : 'white',
-  stroke            : '#000000',
-  strokeThickness   : 4,
-  dropShadow        : true,
-  dropShadowColor   : '#000000',
-  dropShadowBlur    : 4,
-  dropShadowAngle   : Math.PI / 6,
-  dropShadowDistance: 6,
+  fontFamily:         "Arial",
+  fontSize:           12,
+  fill:               "white",
+  stroke:             "#000000",
+  strokeThickness:    4,
+  dropShadow:         true,
+  dropShadowColor:    "#000000",
+  dropShadowBlur:     4,
+  dropShadowAngle:    Math.PI / 6,
+  dropShadowDistance: 6
 });
 
 document.body.appendChild(app.view);
@@ -157,18 +220,18 @@ function play(delta) {
   const speed = 5 * delta;
 
   // Keyboard
-  if (Keyboard.isKeyDown('ArrowLeft', 'KeyA', 'KeyJ')) {
+  if (Keyboard.isKeyDown("ArrowLeft", "KeyA", "KeyJ")) {
     cycleClockDiagram.moveRight();
   }
-  if (Keyboard.isKeyDown('ArrowRight', 'KeyD', 'KeyL')) {
+  if (Keyboard.isKeyDown("ArrowRight", "KeyD", "KeyL")) {
     cycleClockDiagram.moveLeft();
 
   }
-  if (Keyboard.isKeyDown('ArrowUp', 'KeyW', 'KeyI')) {
+  if (Keyboard.isKeyDown("ArrowUp", "KeyW", "KeyI")) {
     cycleClockDiagram.moveBottom();
 
   }
-  if (Keyboard.isKeyDown('ArrowDown', 'KeyS', 'KeyK')) {
+  if (Keyboard.isKeyDown("ArrowDown", "KeyS", "KeyK")) {
     cycleClockDiagram.moveTop();
   }
 
@@ -201,7 +264,7 @@ function gameLoop(delta) {
 }
 
 function setup() {
-  console.log('Setup');
+  console.log("Setup");
 
   // Set the game state
   state = play;
@@ -209,23 +272,23 @@ function setup() {
   // Start the game loop
   app.ticker.add((delta) => gameLoop(delta));
 
-  Mouse.events.on('pressed', null, (buttonCode, event, mouseX, mouseY) => {
-    console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY);
+  Mouse.events.on("pressed", null, (buttonCode, event, mouseX, mouseY) => {
+    console.log(buttonCode, event, "mouseX", mouseX, "mouseY", mouseY);
   });
-  Mouse.events.on('released', null, (buttonCode, event, mouseX, mouseY, mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) => {
-    console.log(buttonCode, event, 'mouseX', mouseX, 'mouseY', mouseY, 'mouseOriginX', mouseOriginX, 'mouseOriginY', mouseOriginY, 'mouseMoveX', mouseMoveX, 'mouseMoveY', mouseMoveY);
+  Mouse.events.on("released", null, (buttonCode, event, mouseX, mouseY, mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) => {
+    console.log(buttonCode, event, "mouseX", mouseX, "mouseY", mouseY, "mouseOriginX", mouseOriginX, "mouseOriginY", mouseOriginY, "mouseMoveX", mouseMoveX, "mouseMoveY", mouseMoveY);
   });
 }
 
 
 loader.onProgress.add(() => {
-  console.log('onProgress');
+  console.log("onProgress");
 });
 loader.onError.add(() => {
-  console.log('onError');
+  console.log("onError");
 });
 loader.onLoad.add(() => {
-  console.log('onLoad');
+  console.log("onLoad");
 });
 loader.onComplete.add(setup);
 loader.load((loader, resources) => {
@@ -248,7 +311,7 @@ loader.load((loader, resources) => {
   // cycleClockDiagram2.table.position.y += 200
   // app.stage.addChild(cycleClockDiagram2.draw())
 
-  const fps = new PIXI.Text('FPS: 0', { fill: 0xffffff });
+  const fps = new PIXI.Text("FPS: 0", { fill: 0xffffff });
   fps.position.x = document.documentElement.clientWidth - 200;
   fps.position.y = 25;
 
